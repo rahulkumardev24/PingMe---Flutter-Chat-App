@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "491986263774",
+    "project_id": "pingmechatapp-7cd56",
+    "storage_bucket": "pingmechatapp-7cd56.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:491986263774:android:40c35ff23ca4effe8cec4f",
+        "android_client_info": {
+          "package_name": "com.example.ping_me"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7fP-J2Z3hQ-lD-uL0aWy2vMRm-wIARBo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
