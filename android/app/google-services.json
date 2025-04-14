@@ -12,7 +12,20 @@
           "package_name": "com.example.ping_me"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "491986263774-pboo7bl4mejullqnc9c5t2jell402ifh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ping_me",
+            "certificate_hash": "2d710daa35646627a0d8fe2225cf48aa92186c9b"
+          }
+        },
+        {
+          "client_id": "491986263774-o794s80j6uv64ibhto4mgale1m11ijdq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB7fP-J2Z3hQ-lD-uL0aWy2vMRm-wIARBo"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "491986263774-o794s80j6uv64ibhto4mgale1m11ijdq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "491986263774-oe0vc4shalqpma3fblbgt59rh399epr8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.pingMe"
+              }
+            }
+          ]
         }
       }
     }

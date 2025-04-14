@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ping_me/screen/auth/auth_service/auth_service.dart';
+import 'package:ping_me/screen/home_screen.dart';
 import 'package:ping_me/utils/custom_text_style.dart';
+
+import '../../helper/dialogs.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -8,8 +12,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
-    with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+  final AuthService _authService = AuthService();
   late AnimationController animationController;
   var radiusList = [150.0, 200.0, 250.0, 300.0, 350.0];
   @override
@@ -25,6 +29,30 @@ class _LoginScreenState extends State<LoginScreen>
     });
     animationController.repeat();
   }
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
+
+  void loginWithGoogle(BuildContext context) async {
+    /// Show progress bar
+    Dialogs.myShowProgressbar(context);
+    final user = await _authService.signInWithGoogle();
+    /// Dismiss the progress bar
+    Navigator.pop(context);
+    if (user != null) {
+      // Navigate to home screen after selecting email
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => HomeScreen()),
+      );
+    } else {
+     Dialogs.myShowSnackBar(context, "Something went wrong", Colors.red, Colors.white);
+    }
+  }
+
+
 
   late Size deviceSize;
   @override
@@ -77,10 +105,10 @@ class _LoginScreenState extends State<LoginScreen>
               child: SizedBox(
                 width: deviceSize.width * 0.7,
                 child: ElevatedButton(
-                  onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xffffda8c),
                   ),
+                  onPressed: ()=> loginWithGoogle(context),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -93,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen>
                         text: TextSpan(
                           children: [
                             TextSpan(
-                              text: "Sign In with ",
+                              text: "Login In with ",
                               style: myTextStyle18(context),
                             ),
                             TextSpan(

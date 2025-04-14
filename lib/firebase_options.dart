@@ -63,6 +63,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '491986263774',
     projectId: 'pingmechatapp-7cd56',
     storageBucket: 'pingmechatapp-7cd56.firebasestorage.app',
+    androidClientId: '491986263774-pboo7bl4mejullqnc9c5t2jell402ifh.apps.googleusercontent.com',
+    iosClientId: '491986263774-oe0vc4shalqpma3fblbgt59rh399epr8.apps.googleusercontent.com',
     iosBundleId: 'com.example.pingMe',
   );
+
 }
