@@ -7,8 +7,6 @@ import 'package:ping_me/widgets/user_chat_card.dart';
 import '../model/chat_user_model.dart';
 
 class HomeScreen extends StatefulWidget {
-
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -16,6 +14,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final AuthService authService = AuthService();
   List<ChatUserModel> users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    APIs.getCurrentUser();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.more_vert, color: Colors.white),
             onPressed: () {
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=> ProfileScreen(user:users[0])));
+              Navigator.push(context, MaterialPageRoute(builder: (_)=> ProfileScreen(user:APIs.currentUser!)));
             },
           ),
         ],
@@ -60,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       /// --- Body --- ///
       body: StreamBuilder(
-        stream: APIs.firebaseFirestore.collection("users").snapshots(),
+        stream: APIs.getAllUsers(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -75,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: list.length,
               itemBuilder: (context, index) {
                 /// Convert doc to model
-                /// 🔥 Clear and add fetched users
+                /// Clear and add fetched users
                 users = list.map((doc) => ChatUserModel.fromJson(doc.data())).toList();
                 return UserChatCard(
                   /// --- username --- ///
