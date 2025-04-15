@@ -1,14 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ping_me/api/apis.dart';
 import 'package:ping_me/screen/auth/auth_service/auth_service.dart';
+import 'package:ping_me/screen/profile_screen.dart';
 import 'package:ping_me/utils/custom_text_style.dart';
 import 'package:ping_me/widgets/user_chat_card.dart';
-
 import '../model/chat_user_model.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -16,10 +15,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final AuthService authService = AuthService();
+  List<ChatUserModel> users = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      /// --- App bar --- ///
       appBar: AppBar(
         title: Text(
           "Ping Me",
@@ -37,9 +38,13 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.search, color: Colors.white),
             onPressed: () {},
           ),
+
+          /// --- here we navigate to profile screen --- ///
           IconButton(
             icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=> ProfileScreen(user:users[0])));
+            },
           ),
         ],
         elevation: 0,
@@ -53,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+      /// --- Body --- ///
       body: StreamBuilder(
         stream: APIs.firebaseFirestore.collection("users").snapshots(),
         builder: (context, snapshot) {
@@ -64,18 +70,20 @@ class _HomeScreenState extends State<HomeScreen> {
             return Center(child: Text("No user found"));
           } else if (snapshot.hasData) {
             final list = snapshot.data!.docs;
-
             return ListView.builder(
               physics: const BouncingScrollPhysics(),
               itemCount: list.length,
               itemBuilder: (context, index) {
-                // Convert doc to model
-                final userModel = ChatUserModel.fromJson(list[index].data());
+                /// Convert doc to model
+                /// 🔥 Clear and add fetched users
+                users = list.map((doc) => ChatUserModel.fromJson(doc.data())).toList();
                 return UserChatCard(
-                  userName: userModel.name,
+                  /// --- username --- ///
+                  userName: users[index].name,
                   lastMessage: 'This is my last message',
                   time: '12:00 AM',
-                  imagePath: userModel.imageUrl ?? '', // null check
+                  imagePath: users[index].imageUrl ?? '',
+                  isOnline: true,
                 );
               },
             );

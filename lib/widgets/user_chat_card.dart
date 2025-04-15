@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class UserChatCard extends StatefulWidget {
@@ -40,18 +42,27 @@ class _UserChatCardState extends State<UserChatCard> {
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  /// Profile image 
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: NetworkImage(widget.imagePath),
-                        fit: BoxFit.cover,
+                  /// Profile image
+                  ClipOval(
+                    child: CachedNetworkImage(
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
+                      imageUrl: widget.imagePath,
+                      placeholder: (context, url) => SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      ),
+                      errorWidget: (context, url, error) => SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: Icon(CupertinoIcons.person, size: 28),
                       ),
                     ),
                   ),
+
+                  /// online
                   if (widget.isOnline)
                     Positioned(
                       right: 0,
