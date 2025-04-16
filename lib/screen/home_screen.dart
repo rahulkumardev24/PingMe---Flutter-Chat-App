@@ -25,88 +25,126 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      /// --- App bar --- ///
-      appBar: AppBar(
-        title: Text(
-          "Ping Me",
-          style: myTextStyle18(
-            context,
-          ).copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.home_filled, color: Colors.white),
-          onPressed: () {},
-        ),
-        actions: [
-          IconButton(
-            icon: Icon( _isSearching ? Icons.close : Icons.search, color: Colors.white),
-            onPressed: () {
-              setState(() {
-                _isSearching = !_isSearching ;
-              });
-            },
-          ),
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: WillPopScope(
+        onWillPop: () async {
+          if (_isSearching) {
+            setState(() {
+              _isSearching = false;
+            });
+            return false;
+          } else {
+            return true;
+          }
+        },
+        child: Scaffold(
+          backgroundColor: Colors.grey[50],
+          /// --- App bar --- ///
+          appBar: AppBar(
+            title: Text(
+              "Ping Me",
+              style: myTextStyle18(
+                context,
+              ).copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.home_filled, color: Colors.white),
+              onPressed: () {},
+            ),
+            actions: [
+              IconButton(
+                icon: Icon( _isSearching ? Icons.close : Icons.search, color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    _isSearching = !_isSearching ;
+                  });
+                },
+              ),
 
-          /// --- here we navigate to profile screen --- ///
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_)=> ProfileScreen(user:APIs.currentUser!)));
-            },
-          ),
-        ],
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blue[800]!, Colors.blue[600]!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              /// --- here we navigate to profile screen --- ///
+              IconButton(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_)=> ProfileScreen(user:APIs.currentUser!)));
+                },
+              ),
+            ],
+            elevation: 0,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue[800]!, Colors.blue[600]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-      /// --- Body --- ///
-      body: StreamBuilder(
-        stream: APIs.getAllUsers(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }else if(snapshot.hasError){
-            return Center(child: Text("Something went wrong"));
-          } else if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
-            return Center(child: Text("No user found"));
-          } else if (snapshot.hasData) {
-            final list = snapshot.data!.docs;
-            return ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                /// Convert doc to model
-                /// Clear and add fetched users
-                users = list.map((doc) => ChatUserModel.fromJson(doc.data())).toList();
-                return UserChatCard(
-                  /// --- username --- ///
-                  userName: users[index].name,
-                  lastMessage: 'This is my last message',
-                  time: '12:00 AM',
-                  imagePath: users[index].imageUrl ?? '',
-                  isOnline: true,
-                );
-              },
-            );
-          }
+          /// --- Body --- ///
+          body: Column(
+            children: [
+             _isSearching ?  TextField(
+                decoration: InputDecoration(hintText: "Search..."),
+               autofocus: true,
+               onChanged: (val){
 
-          return Center(child: Text("Something went wrong"));
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => authService.signOut(),
-        backgroundColor: Colors.blue[600],
-        child: const Icon(Icons.add_comment_rounded, color: Colors.white),
+                  /// --- search logic --- ///
+                 _searchUser.clear();
+                 for(var i in users){
+                   if(i.name.toLowerCase().contains(val.toLowerCase()) || i.email.toLowerCase().contains(val.toLowerCase())){
+                     _searchUser.add(i);
+                     setState(() {
+
+                     });
+                   }
+                 }
+               }
+              ) : SizedBox(),
+              Expanded(
+                child: StreamBuilder(
+                  stream: APIs.getAllUsers(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }else if(snapshot.hasError){
+                      return Center(child: Text("Something went wrong"));
+                    } else if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
+                      return Center(child: Text("No user found"));
+                    } else if (snapshot.hasData) {
+                      final list = snapshot.data!.docs;
+                      return ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: _isSearching ? _searchUser.length : list.length,
+                        itemBuilder: (context, index) {
+                          /// Convert doc to model
+                          /// Clear and add fetched users
+                          users = list.map((doc) => ChatUserModel.fromJson(doc.data())).toList();
+                          final showUserData = _isSearching ? _searchUser[index] : users[index];
+                          return UserChatCard(
+                            /// --- username --- ///
+                            userName: showUserData.name,
+                            lastMessage: 'This is my last message',
+                            time: '12:00 AM',
+                            imagePath: showUserData.imageUrl ?? '',
+                            isOnline: true,
+                          );
+                        },
+                      );
+                    }
+                    return Center(child: Text("Something went wrong"));
+                  },
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => authService.signOut(),
+            backgroundColor: Colors.blue[600],
+            child: const Icon(Icons.add_comment_rounded, color: Colors.white),
+          ),
+        ),
       ),
     );
   }

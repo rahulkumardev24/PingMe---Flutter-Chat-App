@@ -40,7 +40,7 @@ class AuthService {
             name: user.displayName ?? "No Name",
             email: user.email ?? "",
             imageUrl: user.photoURL,
-            about: "",
+            about: "Hey, i'am using we chat",
             lastActive: DateTime.now(),
             isOnline: true,
             pushToken: "",
