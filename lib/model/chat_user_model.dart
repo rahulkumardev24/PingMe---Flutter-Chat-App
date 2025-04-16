@@ -1,12 +1,12 @@
 class ChatUserModel {
-  final String userId;
-  final String name;
-  final String email;
-  final String? imageUrl;
-  final String? about;
-  final DateTime lastActive;
-  final bool isOnline;
-  final String? pushToken;
+  late String userId;
+  late String name;
+  late String email;
+  late String? imageUrl;
+  late String? about;
+  late DateTime lastActive;
+  late bool isOnline;
+  late String? pushToken;
 
   ChatUserModel({
     required this.userId,

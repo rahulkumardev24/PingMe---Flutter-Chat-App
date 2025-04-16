@@ -13,7 +13,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final AuthService authService = AuthService();
+  bool _isSearching = false;
   List<ChatUserModel> users = [];
+  final List<ChatUserModel> _searchUser = [];
 
   @override
   void initState() {
@@ -40,8 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {},
+            icon: Icon( _isSearching ? Icons.close : Icons.search, color: Colors.white),
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching ;
+              });
+            },
           ),
 
           /// --- here we navigate to profile screen --- ///
