@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:ping_me/model/message_model.dart';
+import 'package:ping_me/utils/colors.dart';
 
-class MessageCard extends StatefulWidget {
-  const MessageCard({super.key});
+import '../api/apis.dart';
 
-  @override
-  State<MessageCard> createState() => _MessageCardState();
-}
+class MessageCard extends StatelessWidget {
+  const MessageCard({super.key, required this.messageModel});
+  final MessageModel messageModel;
 
-class _MessageCardState extends State<MessageCard> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return APIs.user.uid == messageModel.fromId
+        ? _blueMessage(context)
+        : _greenMessage(context);
+  }
+
+  /// 🟦 Sender message - current user
+  Widget _blueMessage(BuildContext context) {
+    return Text("Hello");
+  }
+
+  /// 🟩 Receiver message - other user
+  Widget _greenMessage(BuildContext context) {
+    return Text("Hello");
   }
 }

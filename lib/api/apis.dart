@@ -8,12 +8,18 @@ import '../model/chat_user_model.dart';
 class APIs {
   /// ---- Firebase auth --- ///
   static FirebaseAuth auth = FirebaseAuth.instance;
+
   /// --- Firebase firestore --- ///
   static FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+
   /// --- Firebase storage --- ///
-  static FirebaseStorage firebaseStorage = FirebaseStorage.instance ;
+  static FirebaseStorage firebaseStorage = FirebaseStorage.instance;
+
   /// --- Current user --- ///
   static ChatUserModel? currentUser;
+
+  // to return current user
+  static User get user => auth.currentUser!;
 
   ///  Function to get all users from 'users' collection
   static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers() {
@@ -22,6 +28,7 @@ class APIs {
         .where('userId', isNotEqualTo: auth.currentUser?.uid)
         .snapshots();
   }
+
   /// Function to get current user info from 'users' collection
   static Future<void> getCurrentUser() async {
     try {
@@ -36,7 +43,6 @@ class APIs {
     } catch (e) {
       print("Error getting current user: $e");
     }
-
   }
 
   /// ---  Function to  update profile picture in 'users' collection --- ///
@@ -70,7 +76,6 @@ class APIs {
     }
   }
 
-
   /// --- Function to update current user info in 'users' collection --- ///
   static Future<void> updateCurrentUser() async {
     try {
@@ -83,5 +88,11 @@ class APIs {
       print("Error updating user: $e");
     }
   }
+
+  /// ******************* Chat Screen Related APIs ********************* ///
+ static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessage(){
+    return firebaseFirestore.collection("messages").snapshots();
+
+ }
 
 }

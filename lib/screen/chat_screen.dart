@@ -2,7 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ping_me/model/chat_user_model.dart';
+import 'package:ping_me/model/message_model.dart';
 import 'package:ping_me/utils/custom_text_style.dart';
+import 'package:ping_me/widgets/message_card.dart';
 
 import '../api/apis.dart';
 import '../utils/colors.dart';
@@ -16,16 +18,16 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-@override
+  List<MessageModel> _list = [];
+  @override
   void dispose() {
     super.dispose();
-
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: ()=> FocusScope.of(context).unfocus(),
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         /// --- appbar --- ///
         appBar: AppBar(
@@ -40,7 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
               /// ---- steam builder --- ///
               Expanded(
                 child: StreamBuilder(
-                  stream: APIs.getAllUsers(),
+                  stream: APIs.getAllMessage(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
@@ -48,15 +50,21 @@ class _ChatScreenState extends State<ChatScreen> {
                       return Center(child: Text("Something went wrong"));
                     } else if (!snapshot.hasData ||
                         snapshot.data!.docs.isEmpty) {
-                      return Center(child: Text("No user found"));
+                      return Center(
+                        child: Text(
+                          "Say Hii! 👋",
+                          style: myTextStyle24(context),
+                        ),
+                      );
                     } else if (snapshot.hasData) {
-                      final _list = ["Hii" , "What are your doing"] ;
+                      _list.add(MessageModel(toId: "xyz", msg: "Hii", read: "", type: Type.text, fromId: APIs.user.uid, sent: "12:00AM"));
+                      _list.add(MessageModel(toId: "xyz", msg: "Hii", read: "", type: Type.text, fromId: APIs.user.uid, sent: "12:00AM"));
+
                       return ListView.builder(
                         physics: const BouncingScrollPhysics(),
                         itemCount: _list.length,
                         itemBuilder: (context, index) {
-
-                          return Text(_list[index]);
+                          return MessageCard(messageModel: _list[index]);
                         },
                       );
                     }
@@ -64,6 +72,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   },
                 ),
               ),
+
               /// --- here we call chat input box --- ///
               _chatInput(),
             ],
@@ -138,7 +147,10 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Card(
               color: Colors.white,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2.0 , vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 2.0,
+                  vertical: 2,
+                ),
                 child: Row(
                   children: [
                     /// Left side - emoji and attachment buttons
@@ -156,7 +168,10 @@ class _ChatScreenState extends State<ChatScreen> {
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Type a message...',
-                          hintStyle: myTextStyle15(fontColor: AppColors.secondary , context),
+                          hintStyle: myTextStyle15(
+                            fontColor: AppColors.secondary,
+                            context,
+                          ),
                         ),
                         maxLines: null,
                         keyboardType: TextInputType.multiline,
@@ -165,20 +180,20 @@ class _ChatScreenState extends State<ChatScreen> {
                     IconButton(
                       icon: Icon(Icons.image, color: AppColors.secondary),
                       onPressed: () {},
-
                     ),
                     IconButton(
-                      icon: Icon(Icons.photo_camera_rounded, color: AppColors.secondary),
+                      icon: Icon(
+                        Icons.photo_camera_rounded,
+                        color: AppColors.secondary,
+                      ),
                       onPressed: () {},
-
                     ),
-
-
                   ],
                 ),
               ),
             ),
           ),
+
           /// Right side - send button
           Container(
             decoration: BoxDecoration(
