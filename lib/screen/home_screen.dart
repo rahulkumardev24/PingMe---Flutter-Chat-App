@@ -138,15 +138,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     (doc) => ChatUserModel.fromJson(doc.data()),
                                   )
                                   .toList();
-                          final showUserData =
-                              _isSearching ? _searchUser[index] : users[index];
                           return UserChatCard(
-                            /// --- username --- ///
-                            userName: showUserData.name,
-                            lastMessage: 'This is my last message',
-                            time: '12:00 AM',
-                            imagePath: showUserData.imageUrl ?? '',
-                            isOnline: true,
+                            user:
+                                _isSearching
+                                    ? _searchUser[index]
+                                    : users[index],
                           );
                         },
                       );

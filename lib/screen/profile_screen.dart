@@ -53,18 +53,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         imageFile = File(pickedImage.path);
       });
 
-      // Show loading dialog
+      /// Show loading dialog
       Dialogs.myShowProgressbar(context);
 
-      // Await profile update
+      /// Await profile update
       await APIs.updateUserProfilePicture(imageFile!);
 
-      // Close progress dialog AFTER upload completes
+      /// Close progress dialog AFTER upload completes
       Navigator.pop(context);
       Navigator.pop(context);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

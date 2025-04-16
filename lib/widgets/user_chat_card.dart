@@ -1,26 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:ping_me/screen/chat_screen.dart';
+
+import '../model/chat_user_model.dart';
 
 class UserChatCard extends StatefulWidget {
-  final String userName;
-  final String lastMessage;
-  final String time;
-  final int unreadCount;
-  final bool isOnline;
-  final String imagePath ; 
-  final VoidCallback? onTap;
+  final ChatUserModel user;
+  UserChatCard({required this.user}) ;
 
-  const UserChatCard({
-    super.key,
-    required this.userName,
-    required this.lastMessage,
-    required this.time,
-    this.unreadCount = 0,
-    this.isOnline = false,
-    this.onTap,
-    required this.imagePath,
-  });
 
   @override
   State<UserChatCard> createState() => _UserChatCardState();
@@ -34,7 +22,9 @@ class _UserChatCardState extends State<UserChatCard> {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: widget.onTap,
+        onTap: (){
+          Navigator.push(context, MaterialPageRoute(builder: (_)=> ChatScreen(user: widget.user,)));
+        },
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(
@@ -48,7 +38,7 @@ class _UserChatCardState extends State<UserChatCard> {
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
-                      imageUrl: widget.imagePath,
+                      imageUrl: widget.user.imageUrl!,
                       placeholder: (context, url) => SizedBox(
                         width: 56,
                         height: 56,
@@ -63,7 +53,7 @@ class _UserChatCardState extends State<UserChatCard> {
                   ),
 
                   /// online
-                  if (widget.isOnline)
+                  if (widget.user.isOnline)
                     Positioned(
                       right: 0,
                       bottom: 0,
@@ -88,12 +78,14 @@ class _UserChatCardState extends State<UserChatCard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        /// --- username --- ///
                         Text(
-                          widget.userName,
+                          widget.user.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text(widget.time),
+                        /// --- latest active time --- ///
+                        // Text(widget.user.lastActive.toString()),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -101,24 +93,12 @@ class _UserChatCardState extends State<UserChatCard> {
                       children: [
                         Expanded(
                           child: Text(
-                            widget.lastMessage,
+                            widget.user.about!,
 
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (widget.unreadCount > 0)
-                          Container(
-                            margin: const EdgeInsets.only(left: 8),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(widget.unreadCount.toString()),
-                          ),
                       ],
                     ),
                   ],
