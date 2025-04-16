@@ -22,35 +22,52 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late Size mqData = MediaQuery.of(context).size ;
+  late Size mqData = MediaQuery.of(context).size;
   AuthService authService = AuthService();
   String _status = "Available";
   final _formKey = GlobalKey<FormState>();
-
   File? imageFile;
 
+  /// --- pick image form camera --- ///
   Future<void> _pickImageFromCamera() async {
-    final pickedImage = await ImagePicker().pickImage(source: ImageSource.camera);
+    final pickedImage = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+    );
     if (pickedImage != null) {
       setState(() {
         imageFile = File(pickedImage.path);
       });
+      /// here we call profile image change function
+      APIs.updateUserProfilePicture(imageFile!);
+      Navigator.pop(context);
     }
   }
-
+/// --- pick image from gallery --- ///
   Future<void> _pickImageFromGallery() async {
-    final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedImage = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+
     if (pickedImage != null) {
       setState(() {
         imageFile = File(pickedImage.path);
       });
+
+      // Show loading dialog
+      Dialogs.myShowProgressbar(context);
+
+      // Await profile update
+      await APIs.updateUserProfilePicture(imageFile!);
+
+      // Close progress dialog AFTER upload completes
+      Navigator.pop(context);
+      Navigator.pop(context);
     }
   }
 
 
   @override
   Widget build(BuildContext context) {
-
     return GestureDetector(
       /// this is use for when click any when in the screen keyboard close
       onTap: () => FocusScope.of(context).unfocus(),
@@ -72,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Profile Picture
+                  /// Profile Picture
                   Center(
                     child: Stack(
                       children: [
@@ -87,16 +104,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                           child: ClipOval(
-                            child: CachedNetworkImage(
-                              imageUrl: widget.user.imageUrl.toString(),
-                              fit: BoxFit.cover,
-                              placeholder:
-                                  (context, url) =>
-                                      const CircularProgressIndicator(),
-                              errorWidget:
-                                  (context, url, error) =>
-                                      const Icon(Icons.person),
-                            ),
+                            child:
+                                imageFile != null
+                                    ? Image.file(imageFile!, fit: BoxFit.cover)
+                                    : CachedNetworkImage(
+                                      imageUrl: widget.user.imageUrl.toString(),
+                                      fit: BoxFit.cover,
+                                      placeholder:
+                                          (context, url) =>
+                                              const CircularProgressIndicator(),
+                                      errorWidget:
+                                          (context, url, error) =>
+                                              const Icon(Icons.person),
+                                    ),
                           ),
                         ),
                         Positioned(
@@ -265,9 +285,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _editProfile() {
-    // Implement edit profile functionality
-  }
+  void _editProfile() {}
 
   void _changePhoto() {
     showModalBottomSheet(
@@ -283,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text("Pick profile picture" , style: myTextStyle18(context),),
+                Text("Pick profile picture", style: myTextStyle18(context)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -293,7 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: 100,
                       width: 100,
                       child: ElevatedButton(
-                        onPressed: _pickImageFromCamera ,
+                        onPressed: _pickImageFromCamera,
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           backgroundColor: AppColors.blue.withAlpha(10),
@@ -308,6 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
+
                     /// --- gallery button --- ///
                     SizedBox(
                       height: 100,
@@ -328,7 +347,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ],

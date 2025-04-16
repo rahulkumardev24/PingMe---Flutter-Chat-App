@@ -51,9 +51,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
      Dialogs.myShowSnackBar(context, "Something went wrong", Colors.red, Colors.white);
     }
   }
-
-
-
   late Size deviceSize;
   @override
   Widget build(BuildContext context) {

@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: ()=> FocusScope.of(context).unfocus(),
+      onTap: () => FocusScope.of(context).unfocus(),
       child: WillPopScope(
         onWillPop: () async {
           if (_isSearching) {
@@ -40,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: Scaffold(
           backgroundColor: Colors.grey[50],
+
           /// --- App bar --- ///
           appBar: AppBar(
             title: Text(
@@ -55,10 +56,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             actions: [
               IconButton(
-                icon: Icon( _isSearching ? Icons.close : Icons.search, color: Colors.white),
+                icon: Icon(
+                  _isSearching ? Icons.close : Icons.search,
+                  color: Colors.white,
+                ),
                 onPressed: () {
                   setState(() {
-                    _isSearching = !_isSearching ;
+                    _isSearching = !_isSearching;
                   });
                 },
               ),
@@ -67,7 +71,12 @@ class _HomeScreenState extends State<HomeScreen> {
               IconButton(
                 icon: const Icon(Icons.more_vert, color: Colors.white),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_)=> ProfileScreen(user:APIs.currentUser!)));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProfileScreen(user: APIs.currentUser!),
+                    ),
+                  );
                 },
               ),
             ],
@@ -82,46 +91,55 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+
           /// --- Body --- ///
           body: Column(
             children: [
-             _isSearching ?  TextField(
-                decoration: InputDecoration(hintText: "Search..."),
-               autofocus: true,
-               onChanged: (val){
-
-                  /// --- search logic --- ///
-                 _searchUser.clear();
-                 for(var i in users){
-                   if(i.name.toLowerCase().contains(val.toLowerCase()) || i.email.toLowerCase().contains(val.toLowerCase())){
-                     _searchUser.add(i);
-                     setState(() {
-
-                     });
-                   }
-                 }
-               }
-              ) : SizedBox(),
+              _isSearching
+                  ? TextField(
+                    decoration: InputDecoration(hintText: "Search..."),
+                    autofocus: true,
+                    onChanged: (val) {
+                      /// --- search logic --- ///
+                      _searchUser.clear();
+                      for (var i in users) {
+                        if (i.name.toLowerCase().contains(val.toLowerCase()) ||
+                            i.email.toLowerCase().contains(val.toLowerCase())) {
+                          _searchUser.add(i);
+                          setState(() {});
+                        }
+                      }
+                    },
+                  )
+                  : SizedBox(),
               Expanded(
                 child: StreamBuilder(
                   stream: APIs.getAllUsers(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
-                    }else if(snapshot.hasError){
+                    } else if (snapshot.hasError) {
                       return Center(child: Text("Something went wrong"));
-                    } else if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
+                    } else if (!snapshot.hasData ||
+                        snapshot.data!.docs.isEmpty) {
                       return Center(child: Text("No user found"));
                     } else if (snapshot.hasData) {
                       final list = snapshot.data!.docs;
                       return ListView.builder(
                         physics: const BouncingScrollPhysics(),
-                        itemCount: _isSearching ? _searchUser.length : list.length,
+                        itemCount:
+                            _isSearching ? _searchUser.length : list.length,
                         itemBuilder: (context, index) {
                           /// Convert doc to model
                           /// Clear and add fetched users
-                          users = list.map((doc) => ChatUserModel.fromJson(doc.data())).toList();
-                          final showUserData = _isSearching ? _searchUser[index] : users[index];
+                          users =
+                              list
+                                  .map(
+                                    (doc) => ChatUserModel.fromJson(doc.data()),
+                                  )
+                                  .toList();
+                          final showUserData =
+                              _isSearching ? _searchUser[index] : users[index];
                           return UserChatCard(
                             /// --- username --- ///
                             userName: showUserData.name,
