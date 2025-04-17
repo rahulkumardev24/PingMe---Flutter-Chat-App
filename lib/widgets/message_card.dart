@@ -78,8 +78,10 @@ class _MessageCardState extends State<MessageCard> {
         Row(
           children: [
             SizedBox(width: mqData.width * .04,),
+            if(widget.messageModel.read.isNotEmpty)
             Icon(Icons.done_all_rounded , size: 20,color:Colors.blue,),
             SizedBox(width: 4,),
+            /// time show here
             Text(widget.messageModel.sent , style: myTextStyle15(context,fontColor: Colors.black38),),
           ],
         ) ,
