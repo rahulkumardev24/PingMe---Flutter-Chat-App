@@ -132,15 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemBuilder: (context, index) {
                           /// Convert doc to model
                           /// Clear and add fetched users
-                          users =
-                              list
-                                  .map(
-                                    (doc) => ChatUserModel.fromJson(doc.data()),
-                                  )
-                                  .toList();
+                          users = list.map((doc) => ChatUserModel.fromJson(doc.data()),).toList();
                           return UserChatCard(
                             user:
-                                _isSearching
+                            _isSearching
                                     ? _searchUser[index]
                                     : users[index],
                           );

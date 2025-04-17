@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ping_me/model/chat_user_model.dart';
 import 'package:ping_me/model/message_model.dart';
@@ -7,6 +6,7 @@ import 'package:ping_me/utils/custom_text_style.dart';
 import 'package:ping_me/widgets/message_card.dart';
 
 import '../api/apis.dart';
+import '../helper/dialogs.dart';
 import '../utils/colors.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -18,7 +18,9 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  /// store all messages
   List<MessageModel> _list = [];
+  final _textController = TextEditingController();
   @override
   void dispose() {
     super.dispose();
@@ -41,36 +43,34 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               /// ---- steam builder --- ///
               Expanded(
-                child: StreamBuilder(
-                  stream: APIs.getAllMessage(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text("Something went wrong"));
-                    } else if (!snapshot.hasData ||
-                        snapshot.data!.docs.isEmpty) {
-                      return Center(
-                        child: Text(
-                          "Say Hii! 👋",
-                          style: myTextStyle24(context),
-                        ),
-                      );
-                    } else if (snapshot.hasData) {
-                      _list.add(MessageModel(toId: "xyz", msg: "Hii", read: "", type: Type.text, fromId: APIs.user.uid, sent: "12:00AM"));
-                      _list.add(MessageModel(toId: "xyz", msg: "Hii", read: "", type: Type.text, fromId: APIs.user.uid, sent: "12:00AM"));
+                  child: StreamBuilder(
+                    stream: APIs.getAllMessage(widget.user),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text("Something went wrong"));
+                      } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Center(
+                          child: Text(
+                            "Say Hii! 👋",
+                            style: myTextStyle24(context),
+                          ),
+                        );
+                      } else {
+                        final data = snapshot.data!.docs;
+                        _list = data.map((doc) => MessageModel.fromJson(doc.data())).toList();
+                        return ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: _list.length,
+                          itemBuilder: (context, index) {
+                            return MessageCard(messageModel: _list[index]);
+                          },
+                        );
+                      }
+                    },
+                  )
 
-                      return ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: _list.length,
-                        itemBuilder: (context, index) {
-                          return MessageCard(messageModel: _list[index]);
-                        },
-                      );
-                    }
-                    return Center(child: Text("Something went wrong"));
-                  },
-                ),
               ),
 
               /// --- here we call chat input box --- ///
@@ -165,6 +165,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     /// Middle - text input field
                     Expanded(
                       child: TextField(
+                        controller: _textController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Type a message...',
@@ -202,7 +203,14 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             child: IconButton(
               icon: Icon(Icons.send, color: Colors.white),
-              onPressed: () {},
+              onPressed: () {
+                if(_textController.text.isEmpty){
+                  Dialogs.myShowSnackBar(context, "Please type a message" , Colors.red , Colors.white);
+                }else {
+                  APIs.sendMessage(widget.user , _textController.text);
+                  _textController.clear();
+                }
+              },
             ),
           ),
         ],
