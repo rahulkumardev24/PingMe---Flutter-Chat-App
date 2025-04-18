@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ping_me/helper/my_date_util.dart';
 import 'package:ping_me/model/message_model.dart';
 import 'package:ping_me/utils/colors.dart';
 import 'package:ping_me/utils/custom_text_style.dart';
@@ -25,6 +26,10 @@ class _MessageCardState extends State<MessageCard> {
 
   /// 🟦 Sender message - current user
   Widget _blueMessage() {
+    /// update last read message if sender and receiver are different
+    if (widget.messageModel.read.isEmpty) {
+      APIs.updateMessageReadStatus(widget.messageModel);
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -63,9 +68,17 @@ class _MessageCardState extends State<MessageCard> {
           ),
         ),
         Padding(
-          padding:  EdgeInsets.only(right: mqData.width * .04),
-          child: Text(widget.messageModel.sent , style: myTextStyle15(context,fontColor: Colors.black38),),
-        )
+          padding: EdgeInsets.only(right: mqData.width * .04),
+
+          /// sent time
+          child: Text(
+            MyDateUtils.getFormateTime(
+              context: context,
+              time: widget.messageModel.sent,
+            ),
+            style: myTextStyle15(context, fontColor: Colors.black38),
+          ),
+        ),
       ],
     );
   }
@@ -77,14 +90,21 @@ class _MessageCardState extends State<MessageCard> {
       children: [
         Row(
           children: [
-            SizedBox(width: mqData.width * .04,),
-            if(widget.messageModel.read.isNotEmpty)
-            Icon(Icons.done_all_rounded , size: 20,color:Colors.blue,),
-            SizedBox(width: 4,),
-            /// time show here
-            Text(widget.messageModel.sent , style: myTextStyle15(context,fontColor: Colors.black38),),
+            SizedBox(width: mqData.width * .04),
+            if (widget.messageModel.read.isNotEmpty)
+              Icon(Icons.done_all_rounded, size: 20, color: Colors.blue),
+            SizedBox(width: 4),
+
+            /// sent time show here
+            Text(
+              MyDateUtils.getFormateTime(
+                context: context,
+                time: widget.messageModel.sent,
+              ),
+              style: myTextStyle15(context, fontColor: Colors.black38),
+            ),
           ],
-        ) ,
+        ),
         Flexible(
           child: Container(
             padding: EdgeInsets.symmetric(
@@ -97,7 +117,10 @@ class _MessageCardState extends State<MessageCard> {
             ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.secondary.withAlpha(100), AppColors.primary.withAlpha(100)],
+                colors: [
+                  AppColors.secondary.withAlpha(100),
+                  AppColors.primary.withAlpha(100),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

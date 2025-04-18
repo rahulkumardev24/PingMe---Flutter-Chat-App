@@ -27,7 +27,7 @@ class ChatUserModel {
       'email': email,
       'imageUrl': imageUrl,
       'about': about,
-      'lastActive': lastActive.toIso8601String(),
+      'lastActive': lastActive,
       'isOnline': isOnline,
       'pushToken': pushToken,
     };
