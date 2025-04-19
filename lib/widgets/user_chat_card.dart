@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +7,7 @@ import 'package:ping_me/model/message_model.dart';
 import 'package:ping_me/screen/chat_screen.dart';
 
 import '../model/chat_user_model.dart';
+import '../utils/custom_text_style.dart';
 
 class UserChatCard extends StatefulWidget {
   final ChatUserModel user;
@@ -19,9 +18,8 @@ class UserChatCard extends StatefulWidget {
 }
 
 class _UserChatCardState extends State<UserChatCard> {
-
   /// last message
-  MessageModel? _messageModel ;
+  MessageModel? _messageModel;
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +39,18 @@ class _UserChatCardState extends State<UserChatCard> {
           builder: (context, snapshot) {
             if (snapshot.hasData && snapshot.data != null) {
               final data = snapshot.data!.docs;
-              final list = data.map((e) => MessageModel.fromJson(e.data())).toList() ?? [];
+              final list =
+                  data.map((e) => MessageModel.fromJson(e.data())).toList() ??
+                  [];
               if (list.isNotEmpty) {
                 _messageModel = list[0];
               }
             }
-
             return Padding(
               padding: const EdgeInsets.all(12.0),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Stack(
                     clipBehavior: Clip.none,
@@ -100,11 +101,11 @@ class _UserChatCardState extends State<UserChatCard> {
                   const SizedBox(width: 16),
                   // User Info
                   Expanded(
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             /// --- username --- ///
                             Text(
@@ -112,29 +113,41 @@ class _UserChatCardState extends State<UserChatCard> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-
-                            /// --- latest active time --- ///
-                            // Text( widget.user.lastActive.toString()),
-
+                            Text(
+                              _messageModel != null
+                                  ? _messageModel!.msg
+                                  : widget.user.about.toString(),
+                              maxLines: 1,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _messageModel != null ? _messageModel!.msg : widget.user.about.toString(),
-                                maxLines: 1,
-
-                              ),
-                            ),
-                    
-                          ],
-                        ),
-
                       ],
                     ),
                   ),
+
+                  /// --- latest active time or blue dot indicator --- ///
+                  _messageModel == null
+                      ? const SizedBox()
+                      : _messageModel!.read.isEmpty &&
+                          _messageModel!.fromId != APIs.user.uid
+                      ? Container(
+                        // Show blue dot
+                        height: 15,
+                        width: 15,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.blue,
+                        ),
+                      )
+                      : Text(
+                        // Show time
+                        MyDateUtil.getLastMessageTime(
+                          context: context,
+                          time: _messageModel!.sent,
+                        ),
+                        style: myTextStyle15(context),
+                      ),
                 ],
               ),
             );

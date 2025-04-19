@@ -72,7 +72,7 @@ class _MessageCardState extends State<MessageCard> {
 
           /// sent time
           child: Text(
-            MyDateUtils.getFormateTime(
+            MyDateUtil.getFormattedTime(
               context: context,
               time: widget.messageModel.sent,
             ),
@@ -97,7 +97,7 @@ class _MessageCardState extends State<MessageCard> {
 
             /// sent time show here
             Text(
-              MyDateUtils.getFormateTime(
+              MyDateUtil.getFormattedTime(
                 context: context,
                 time: widget.messageModel.sent,
               ),

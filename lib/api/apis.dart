@@ -119,7 +119,7 @@ class APIs {
     final MessageModel messageModel = MessageModel(
       toId: user.userId,
       msg: msg,
-      read: "",
+      read: "false",
       type: Type.text,
       fromId: user.userId,
       sent: time,
@@ -132,7 +132,7 @@ class APIs {
     firebaseFirestore
         .collection('chats/${getConversationId(message.fromId)}/messages')
         .doc(message.sent)
-        .update({"read": DateTime.now().millisecondsSinceEpoch.toString()});
+        .update({"read": "true"});
   }
 
   /// get only last message

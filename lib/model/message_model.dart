@@ -38,6 +38,7 @@ class MessageModel {
 
 enum Type { text, image }
 
+
 // ai message
 class AiMessage {
   String msg;

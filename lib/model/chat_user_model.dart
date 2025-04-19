@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ChatUserModel {
   late String userId;
   late String name;
@@ -27,7 +29,7 @@ class ChatUserModel {
       'email': email,
       'imageUrl': imageUrl,
       'about': about,
-      'lastActive': lastActive,
+      'lastActive': Timestamp.fromDate(lastActive),
       'isOnline': isOnline,
       'pushToken': pushToken,
     };
@@ -41,7 +43,7 @@ class ChatUserModel {
       email: json['email'],
       imageUrl: json['imageUrl'],
       about: json['about'],
-      lastActive: DateTime.parse(json['lastActive']),
+      lastActive: (json['lastActive'] as Timestamp).toDate(),
       isOnline: json['isOnline'] ?? false,
       pushToken: json['pushToken'],
     );
