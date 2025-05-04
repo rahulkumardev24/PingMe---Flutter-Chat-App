@@ -19,9 +19,8 @@ class _MessageCardState extends State<MessageCard> {
 
   @override
   Widget build(BuildContext context) {
-    return APIs.user.uid == widget.messageModel.fromId
-        ? _blueMessage()
-        : _orangeMessage();
+    bool isMe = APIs.user.uid == widget.messageModel.fromId;
+    return isMe ? _orangeMessage() : _blueMessage();
   }
 
   /// 🟦 Sender message - current user
@@ -84,18 +83,29 @@ class _MessageCardState extends State<MessageCard> {
   }
 
   /// 🟩 Receiver message - other user
+  /// 🟩 Receiver message - other user
   Widget _orangeMessage() {
+    bool isSentByMe = widget.messageModel.fromId == APIs.user.uid;
+    bool isRead = widget.messageModel.read != "false";
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
             SizedBox(width: mqData.width * .04),
-            if (widget.messageModel.read.isNotEmpty)
-              Icon(Icons.done_all_rounded, size: 20, color: Colors.blue),
+
+            /// Show double-tick icon only for messages sent by me
+            if (isSentByMe)
+              Icon(
+                Icons.done_all_rounded,
+                size: 20,
+                color: isRead ? Colors.blue : Colors.grey,
+              ),
+
             SizedBox(width: 4),
 
-            /// sent time show here
+            /// Sent time display
             Text(
               MyDateUtil.getFormattedTime(
                 context: context,
@@ -105,6 +115,7 @@ class _MessageCardState extends State<MessageCard> {
             ),
           ],
         ),
+
         Flexible(
           child: Container(
             padding: EdgeInsets.symmetric(
@@ -145,4 +156,5 @@ class _MessageCardState extends State<MessageCard> {
       ],
     );
   }
+
 }

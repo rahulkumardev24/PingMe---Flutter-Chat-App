@@ -64,9 +64,16 @@ class _ChatScreenState extends State<ChatScreen> {
                           physics: const BouncingScrollPhysics(),
                           itemCount: _list.length,
                           itemBuilder: (context, index) {
-                            return MessageCard(messageModel: _list[index]);
+                            final message = _list[index];
+                            /// Update read status if unread and message is for current user
+                            if (message.read == "false" && message.toId == APIs.user.uid) {
+                              APIs.updateMessageReadStatus(message);
+                            }
+
+                            return MessageCard(messageModel: message);
                           },
                         );
+
                       }
                     },
                   )

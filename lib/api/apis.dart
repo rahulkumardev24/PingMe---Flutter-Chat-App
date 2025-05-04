@@ -107,9 +107,9 @@ class APIs {
           : '${id}_${user.uid}';
 
   /// --- send message --- ///
-  static Future<void> sendMessage(ChatUserModel user, String msg) async {
+  static Future<void> sendMessage(ChatUserModel chatUser, String msg) async {
     final ref = firebaseFirestore.collection(
-      "chats/${getConversationId(user.userId)}/messages/",
+      "chats/${getConversationId(chatUser.userId)}/messages/",
     );
 
     /// message sending time also use as message id
@@ -117,11 +117,11 @@ class APIs {
 
     /// message to send
     final MessageModel messageModel = MessageModel(
-      toId: user.userId,
+      toId: chatUser.userId,
       msg: msg,
       read: "false",
       type: Type.text,
-      fromId: user.userId,
+      fromId: user.uid,
       sent: time,
     );
     await ref.doc(time).set(messageModel.toJson());
@@ -132,7 +132,7 @@ class APIs {
     firebaseFirestore
         .collection('chats/${getConversationId(message.fromId)}/messages')
         .doc(message.sent)
-        .update({"read": "true"});
+        .update({"read": DateTime.now().millisecondsSinceEpoch.toString()});
   }
 
   /// get only last message
