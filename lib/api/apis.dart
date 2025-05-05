@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -107,7 +108,11 @@ class APIs {
           : '${id}_${user.uid}';
 
   /// --- send message --- ///
-  static Future<void> sendMessage(ChatUserModel chatUser, String msg) async {
+  static Future<void> sendMessage(
+    ChatUserModel chatUser,
+    String msg,
+    Type type,
+  ) async {
     final ref = firebaseFirestore.collection(
       "chats/${getConversationId(chatUser.userId)}/messages/",
     );
@@ -120,7 +125,7 @@ class APIs {
       toId: chatUser.userId,
       msg: msg,
       read: "false",
-      type: Type.text,
+      type: type,
       fromId: user.uid,
       sent: time,
     );
@@ -144,5 +149,27 @@ class APIs {
         .orderBy("sent", descending: true)
         .limit(1)
         .snapshots();
+  }
+
+  /// send chat image
+  static Future<void> sendChatImage(ChatUserModel chatUser, File file) async {
+    /// getting image file extension
+    final ext = file.path.split('.').last;
+
+    //storage file ref with path
+    final ref = firebaseStorage.ref().child(
+      'images/${getConversationId(chatUser.userId)}/${DateTime.now().millisecondsSinceEpoch}.$ext',
+    );
+
+    /// uploading image
+    await ref.putFile(file, SettableMetadata(contentType: 'image/$ext')).then((
+      p0,
+    ) {
+      log('Data Transferred: ${p0.bytesTransferred / 1000} kb');
+    });
+
+    /// updating image in firestore database
+    final imageUrl = await ref.getDownloadURL();
+    await sendMessage(chatUser, imageUrl, Type.image);
   }
 }

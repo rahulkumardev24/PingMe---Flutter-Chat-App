@@ -289,7 +289,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _changePhoto() {
     showModalBottomSheet(
       context: context,
-
       builder: (BuildContext context) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 32.0),

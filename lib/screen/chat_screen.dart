@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ping_me/model/chat_user_model.dart';
 import 'package:ping_me/model/message_model.dart';
 import 'package:ping_me/utils/custom_text_style.dart';
@@ -23,11 +26,27 @@ class _ChatScreenState extends State<ChatScreen> {
   /// store all messages
   List<MessageModel> _list = [];
   final _textController = TextEditingController();
+  File? imageFile;
   bool _showEmoji = false;
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  /// --- pick image form camera --- ///
+  Future<void> _pickImageFromCamera() async {
+    final pickedImage = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+    );
+    if (pickedImage != null) {
+      setState(() {
+        imageFile = File(pickedImage.path);
+      });
+      /// here we call profile image change function
+      APIs.sendChatImage(widget.user , imageFile!);
+
+    }
   }
 
   @override
@@ -226,7 +245,11 @@ class _ChatScreenState extends State<ChatScreen> {
                         Icons.photo_camera_rounded,
                         color: AppColors.secondary,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        _pickImageFromCamera();
+
+
+                      },
                     ),
                   ],
                 ),
@@ -251,7 +274,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     Colors.white,
                   );
                 } else {
-                  APIs.sendMessage(widget.user, _textController.text);
+                  APIs.sendMessage(widget.user, _textController.text , Type.text);
                   _textController.clear();
                 }
               },

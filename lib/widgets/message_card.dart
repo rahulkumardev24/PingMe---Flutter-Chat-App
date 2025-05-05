@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ping_me/helper/my_date_util.dart';
 import 'package:ping_me/model/message_model.dart';
@@ -34,9 +36,10 @@ class _MessageCardState extends State<MessageCard> {
       children: [
         Flexible(
           child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: mqData.width * .04,
-              vertical: mqData.height * .015,
+            padding: EdgeInsets.all(
+              widget.messageModel.type == Type.image
+                  ? mqData.width * .01
+                  : mqData.width * .03,
             ),
             margin: EdgeInsets.symmetric(
               horizontal: mqData.width * .04,
@@ -56,14 +59,44 @@ class _MessageCardState extends State<MessageCard> {
               ),
               border: Border.all(color: Colors.lightBlue),
             ),
-            child: Text(
-              widget.messageModel.msg,
-              style: myTextStyle18(
-                context,
-                fontColor: Colors.black54,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+
+            /// message and image show here
+            child:
+                widget.messageModel.type == Type.text
+                    ?
+                    /// text message show here
+                    Text(
+                      widget.messageModel.msg,
+                      style: myTextStyle18(
+                        context,
+                        fontColor: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    )
+                    /// --- here image show --- ///
+                    : ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: CachedNetworkImage(
+                        fit: BoxFit.cover,
+                        imageUrl: widget.messageModel.msg,
+                        placeholder:
+                            (context, url) => SizedBox(
+                              width: 56,
+                              height: 56,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                        errorWidget:
+                            (context, url, error) => SizedBox(
+                              width: 56,
+                              height: 56,
+                              child: Icon(Icons.image, size: 28),
+                            ),
+                      ),
+                    ),
           ),
         ),
         Padding(
@@ -82,7 +115,6 @@ class _MessageCardState extends State<MessageCard> {
     );
   }
 
-  /// 🟩 Receiver message - other user
   /// 🟩 Receiver message - other user
   Widget _orangeMessage() {
     bool isSentByMe = widget.messageModel.fromId == APIs.user.uid;
@@ -118,9 +150,10 @@ class _MessageCardState extends State<MessageCard> {
 
         Flexible(
           child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: mqData.width * .04,
-              vertical: mqData.height * .015,
+            padding: EdgeInsets.all(
+              widget.messageModel.type == Type.image
+                  ? mqData.width * .01
+                  : mqData.width * .03,
             ),
             margin: EdgeInsets.symmetric(
               horizontal: mqData.width * .04,
@@ -143,18 +176,45 @@ class _MessageCardState extends State<MessageCard> {
               ),
               border: Border.all(color: Colors.orange),
             ),
-            child: Text(
-              widget.messageModel.msg,
-              style: myTextStyle18(
-                context,
-                fontColor: Colors.black54,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+
+            /// message or image show here
+            child:
+                widget.messageModel.type == Type.text
+                    ? Text(
+                      widget.messageModel.msg,
+                      style: myTextStyle18(
+                        context,
+                        fontColor: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    )
+                    /// --- here image show --- ///
+                    : ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: CachedNetworkImage(
+                        fit: BoxFit.cover,
+                        imageUrl: widget.messageModel.msg,
+                        placeholder:
+                            (context, url) => SizedBox(
+                              width: 56,
+                              height: 56,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                        errorWidget:
+                            (context, url, error) => SizedBox(
+                              width: 56,
+                              height: 56,
+                              child: Icon(Icons.image, size: 28),
+                            ),
+                      ),
+                    ),
           ),
         ),
       ],
     );
   }
-
 }
