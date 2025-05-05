@@ -99,7 +99,7 @@ class _UserChatCardState extends State<UserChatCard> {
                     ],
                   ),
                   const SizedBox(width: 16),
-                  // User Info
+                  /// User Info
                   Expanded(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,

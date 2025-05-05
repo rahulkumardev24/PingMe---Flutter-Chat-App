@@ -1,4 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:ping_me/model/chat_user_model.dart';
 import 'package:ping_me/model/message_model.dart';
@@ -21,6 +23,8 @@ class _ChatScreenState extends State<ChatScreen> {
   /// store all messages
   List<MessageModel> _list = [];
   final _textController = TextEditingController();
+  bool _showEmoji = false;
+
   @override
   void dispose() {
     super.dispose();
@@ -28,6 +32,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mqData = MediaQuery.of(context);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -43,45 +48,62 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               /// ---- steam builder --- ///
               Expanded(
-                  child: StreamBuilder(
-                    stream: APIs.getAllMessage(widget.user),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text("Something went wrong"));
-                      } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return Center(
-                          child: Text(
-                            "Say Hii! 👋",
-                            style: myTextStyle24(context),
-                          ),
-                        );
-                      } else {
-                        final data = snapshot.data!.docs;
-                        _list = data.map((doc) => MessageModel.fromJson(doc.data())).toList();
-                        return ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: _list.length,
-                          itemBuilder: (context, index) {
-                            final message = _list[index];
-                            /// Update read status if unread and message is for current user
-                            if (message.read == "false" && message.toId == APIs.user.uid) {
-                              APIs.updateMessageReadStatus(message);
-                            }
+                child: StreamBuilder(
+                  stream: APIs.getAllMessage(widget.user),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text("Something went wrong"));
+                    } else if (!snapshot.hasData ||
+                        snapshot.data!.docs.isEmpty) {
+                      return Center(
+                        child: Text(
+                          "Say Hii! 👋",
+                          style: myTextStyle24(context),
+                        ),
+                      );
+                    } else {
+                      final data = snapshot.data!.docs;
+                      _list =
+                          data
+                              .map((doc) => MessageModel.fromJson(doc.data()))
+                              .toList();
+                      return ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: _list.length,
+                        itemBuilder: (context, index) {
+                          final message = _list[index];
 
-                            return MessageCard(messageModel: message);
-                          },
-                        );
+                          /// Update read status if unread and message is for current user
+                          if (message.read == "false" &&
+                              message.toId == APIs.user.uid) {
+                            APIs.updateMessageReadStatus(message);
+                          }
 
-                      }
-                    },
-                  )
-
+                          return MessageCard(messageModel: message);
+                        },
+                      );
+                    }
+                  },
+                ),
               ),
 
               /// --- here we call chat input box --- ///
               _chatInput(),
+
+              /// -------- here we show the emoji ---------- ///
+              _showEmoji
+                  ? SizedBox(
+                    height: 300,
+                    child: EmojiPicker(
+                      textEditingController: _textController,
+                      config: Config(
+                        emojiViewConfig: EmojiViewConfig(emojiSizeMax: 28),
+                      ),
+                    ),
+                  )
+                  : const SizedBox(),
             ],
           ),
         ),
@@ -166,7 +188,12 @@ class _ChatScreenState extends State<ChatScreen> {
                         Icons.emoji_emotions_outlined,
                         color: AppColors.secondary,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        setState(() {
+                          _showEmoji = !_showEmoji;
+                        });
+                      },
                     ),
 
                     /// Middle - text input field
@@ -183,6 +210,11 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                         maxLines: null,
                         keyboardType: TextInputType.multiline,
+                        onTap: () {
+                          setState(() {
+                            if (_showEmoji) _showEmoji = !_showEmoji;
+                          });
+                        },
                       ),
                     ),
                     IconButton(
@@ -211,10 +243,15 @@ class _ChatScreenState extends State<ChatScreen> {
             child: IconButton(
               icon: Icon(Icons.send, color: Colors.white),
               onPressed: () {
-                if(_textController.text.isEmpty){
-                  Dialogs.myShowSnackBar(context, "Please type a message" , Colors.red , Colors.white);
-                }else {
-                  APIs.sendMessage(widget.user , _textController.text);
+                if (_textController.text.isEmpty) {
+                  Dialogs.myShowSnackBar(
+                    context,
+                    "Please type a message",
+                    Colors.red,
+                    Colors.white,
+                  );
+                } else {
+                  APIs.sendMessage(widget.user, _textController.text);
                   _textController.clear();
                 }
               },
