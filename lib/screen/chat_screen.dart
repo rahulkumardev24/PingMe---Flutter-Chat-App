@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ping_me/model/chat_user_model.dart';
@@ -28,6 +27,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final _textController = TextEditingController();
   File? imageFile;
   bool _showEmoji = false;
+  bool _isUploading = false;
 
   @override
   void dispose() {
@@ -43,15 +43,42 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         imageFile = File(pickedImage.path);
       });
+      setState(() {
+        _isUploading = true ;
+      });
       /// here we call profile image change function
-      APIs.sendChatImage(widget.user , imageFile!);
+      APIs.sendChatImage(widget.user , imageFile!).then((value){
+        setState(() {
+          _isUploading = false ;
+        });
+      });
+    }
+  }
 
+  /// --- pick image from gallery --- ///
+  Future<void> _pickImageFromGallery() async {
+    final ImagePicker picker  = ImagePicker();
+    /// pick multiple image
+    final List<XFile> pickedImage = await picker.pickMultiImage(
+      imageQuality: 70
+    );
+    /// uploading image
+    for(var myImage in pickedImage){
+      setState(() {
+        _isUploading = true ;
+      });
+      /// here we call profile image change function
+      await APIs.sendChatImage(widget.user , File(myImage.path)).then((value){
+        setState(() {
+          _isUploading = false ;
+        });
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final mqData = MediaQuery.of(context);
+    // final mqData = MediaQuery.of(context);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -91,6 +118,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       return ListView.builder(
                         physics: const BouncingScrollPhysics(),
                         itemCount: _list.length,
+                        reverse: true,
                         itemBuilder: (context, index) {
                           final message = _list[index];
 
@@ -108,8 +136,23 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
 
+              /// ---- Liner Progress indicator --> Only Show when uploading ----- ///
+              if(_isUploading)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: LinearProgressIndicator(
+                  backgroundColor: Colors.black12,
+                  color: Colors.lightBlue.shade200, 
+                  borderRadius: BorderRadius.circular(10),
+
+                  
+                ),
+              ),
+
               /// --- here we call chat input box --- ///
               _chatInput(),
+
+
 
               /// -------- here we show the emoji ---------- ///
               _showEmoji
@@ -238,7 +281,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     IconButton(
                       icon: Icon(Icons.image, color: AppColors.secondary),
-                      onPressed: () {},
+                      onPressed: () {
+                        /// call function
+                        _pickImageFromGallery();
+                      },
                     ),
                     IconButton(
                       icon: Icon(

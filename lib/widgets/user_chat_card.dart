@@ -99,6 +99,7 @@ class _UserChatCardState extends State<UserChatCard> {
                     ],
                   ),
                   const SizedBox(width: 16),
+
                   /// User Info
                   Expanded(
                     child: Row(
@@ -113,9 +114,13 @@ class _UserChatCardState extends State<UserChatCard> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+
+                            /// last message is show here
                             Text(
                               _messageModel != null
-                                  ? _messageModel!.msg
+                                  ? _messageModel!.type == Type.image
+                                      ? "📷 Image"
+                                      : _messageModel!.msg
                                   : widget.user.about.toString(),
                               maxLines: 1,
                             ),
@@ -140,8 +145,8 @@ class _UserChatCardState extends State<UserChatCard> {
                           color: Colors.blue,
                         ),
                       )
+                      /// time show here
                       : Text(
-                        // Show time
                         MyDateUtil.getLastMessageTime(
                           context: context,
                           time: _messageModel!.sent,
