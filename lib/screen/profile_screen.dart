@@ -1,16 +1,13 @@
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ping_me/api/apis.dart';
 import 'package:ping_me/model/chat_user_model.dart';
 import 'package:ping_me/screen/auth/auth_service/auth_service.dart';
 import 'package:ping_me/screen/auth/login_screen.dart';
-import 'package:ping_me/utils/colors.dart';
 import 'package:ping_me/utils/custom_text_style.dart';
-
+import 'package:ping_me/widgets/my_navigation_button.dart';
 import '../helper/dialogs.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -37,12 +34,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         imageFile = File(pickedImage.path);
       });
-      /// here we call profile image change function
       APIs.updateUserProfilePicture(imageFile!);
       Navigator.pop(context);
     }
   }
-/// --- pick image from gallery --- ///
+
+  /// --- pick image from gallery --- ///
   Future<void> _pickImageFromGallery() async {
     final pickedImage = await ImagePicker().pickImage(
       source: ImageSource.gallery,
@@ -53,13 +50,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         imageFile = File(pickedImage.path);
       });
 
-      /// Show loading dialog
       Dialogs.myShowProgressbar(context);
-
-      /// Await profile update
       await APIs.updateUserProfilePicture(imageFile!);
-
-      /// Close progress dialog AFTER upload completes
       Navigator.pop(context);
       Navigator.pop(context);
     }
@@ -67,41 +59,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mqData = MediaQuery.of(context).size;
     return GestureDetector(
-      /// this is use for when click any when in the screen keyboard close
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        /// --- appbar --- ///
+        /// --- app bar --- ///
         appBar: AppBar(
-          title: const Text('Profile'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => _editProfile(),
+          title: Text(
+            'Profile',
+            style: myTextStyle24(context, fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+          elevation: 0,
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: MyNavigationButton(
+              btnIcon: Icons.arrow_back_ios_new_rounded,
+              btnBackground: Colors.black12,
+              iconSize: 21,
+              onPressed: () => Navigator.pop(context),
             ),
-          ],
+          ),
         ),
+
+        /// body
         body: Form(
           key: _formKey,
           child: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
+                  const SizedBox(height: 24),
+
                   /// Profile Picture
-                  Center(
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Theme.of(context).primaryColor,
-                              width: 2,
-                            ),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: mqData.width * 0.5,
+                        height: mqData.width * 0.5,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.orange.shade300,
+                              Colors.orange.shade100,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(3.0),
                           child: ClipOval(
                             child:
                                 imageFile != null
@@ -113,154 +123,277 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           (context, url) =>
                                               const CircularProgressIndicator(),
                                       errorWidget:
-                                          (context, url, error) =>
-                                              const Icon(Icons.person),
+                                          (context, url, error) => const Icon(
+                                            Icons.person,
+                                            size: 60,
+                                          ),
                                     ),
                           ),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: CircleAvatar(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            radius: 18,
-                            child: IconButton(
-                              icon: const Icon(Icons.camera_alt, size: 18),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: () => _changePhoto(),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade300,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                width: 3,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 20,
                               color: Colors.white,
-                              onPressed: () => _changePhoto(),
                             ),
                           ),
                         ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  /// User Email
+                  Text(
+                    widget.user.email,
+                    style: myTextStyle18(context, fontColor: Colors.black54),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  /// Username Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 3),
                       ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: TextFormField(
+                        initialValue: widget.user.name,
+                        onSaved: (val) => APIs.currentUser!.name = val ?? "",
+                        validator:
+                            (val) =>
+                                val != null && val.isNotEmpty
+                                    ? null
+                                    : "Please fill the name",
+                        decoration: InputDecoration(
+                          labelText: 'Username',
+                          border: InputBorder.none,
+                          labelStyle: myTextStyle15(
+                            context,
+                            fontColor: Colors.black54,
+                          ),
+                          prefixIcon: Icon(Icons.person, color: Colors.orange),
+                        ),
+                        style: myTextStyle18(context),
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
-                  /// User Email
-                  Text(
-                    widget.user.email,
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  ),
-
-                  /// --- username --- ///
-                  TextFormField(
-                    initialValue: widget.user.name,
-                    onSaved: (val) => APIs.currentUser!.name = val ?? "",
-                    validator:
-                        (val) =>
-                            val != null && val.isNotEmpty
-                                ? null
-                                : "plz fill the name",
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                  // About Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 3),
+                      ],
                     ),
-                  ),
-
-                  /// --- about --- ///
-                  TextFormField(
-                    initialValue: widget.user.about,
-                    onSaved: (val) => APIs.currentUser!.about = val ?? "",
-                    validator:
-                        (val) =>
-                            val != null && val.isNotEmpty
-                                ? null
-                                : "plz fill the about",
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: TextFormField(
+                        initialValue: widget.user.about,
+                        onSaved: (val) => APIs.currentUser!.about = val ?? "",
+                        validator:
+                            (val) =>
+                                val != null && val.isNotEmpty
+                                    ? null
+                                    : "Please fill the about",
+                        decoration: InputDecoration(
+                          labelText: 'About',
+                          border: InputBorder.none,
+                          labelStyle: myTextStyle15(
+                            context,
+                            fontColor: Colors.black54,
+                          ),
+                          prefixIcon: Icon(Icons.info, color: Colors.orange),
+                        ),
+                        style: myTextStyle18(context),
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
                   /// Status Selector
-                  DropdownButtonFormField<String>(
-                    value: _status,
-                    decoration: InputDecoration(
-                      labelText: 'Status',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 3),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: DropdownButtonFormField<String>(
+                        value: _status,
+                        decoration: InputDecoration(
+                          labelText: 'Status',
+                          border: InputBorder.none,
+                          labelStyle: myTextStyle15(
+                            context,
+                            fontColor: Colors.black54,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.circle_notifications,
+                            color: Colors.orange,
+                          ),
+                        ),
+                        items: [
+                          DropdownMenuItem(
+                            value: "Available",
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.circle,
+                                  color: Colors.green,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  "Available",
+                                  style: myTextStyle18(context),
+                                ),
+                              ],
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: "Busy",
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.remove_circle,
+                                  color: Colors.red,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 8),
+                                Text("Busy", style: myTextStyle18(context)),
+                              ],
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: "Away",
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.access_time,
+                                  color: Colors.orange,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 8),
+                                Text("Away", style: myTextStyle18(context)),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _status = value);
+                          }
+                        },
+                        dropdownColor: Theme.of(context).cardColor,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
                       ),
                     ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: "Available",
-                        child: Row(
-                          children: [
-                            Icon(Icons.circle, color: Colors.green, size: 16),
-                            SizedBox(width: 8),
-                            Text("Available"),
-                          ],
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: "Busy",
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.remove_circle,
-                              color: Colors.red,
-                              size: 16,
-                            ),
-                            SizedBox(width: 8),
-                            Text("Busy"),
-                          ],
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: "Away",
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.access_time,
-                              color: Colors.orange,
-                              size: 16,
-                            ),
-                            SizedBox(width: 8),
-                            Text("Away"),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _status = value);
-                      }
-                    },
                   ),
+                  const SizedBox(height: 32),
+
+                  /// --- Update button --- ///
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          APIs.updateCurrentUser();
+                          Dialogs.myShowSnackBar(
+                            context,
+                            "Update Successfully",
+                            Colors.greenAccent,
+                            Colors.black87,
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.greenAccent.shade100,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(width: 1, color: Colors.greenAccent),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                      child: Text("Update", style: myTextStyle24(context)),
+                    ),
+                  ),
+
+                  SizedBox(height: mqData.height * .1),
+
+                  /// Logout Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        authService.signOut().then((value) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => LoginScreen()),
+                          );
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent.withAlpha(20),
+                        foregroundColor: Colors.redAccent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.logout, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            "Logout",
+                            style: myTextStyle15(
+                              context,
+                              fontColor: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 24),
-
-                  /// --- update button --- ///
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        APIs.updateCurrentUser();
-                        Dialogs.myShowSnackBar(
-                          context,
-                          "Update Successfully",
-                          Colors.greenAccent,
-                          Colors.black87,
-                        );
-                      }
-                    },
-                    child: Text("Update"),
-                  ),
-
-                  /// - logout button --- ///
-                  ElevatedButton(
-                    onPressed: () {
-                      authService.signOut().then((value) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => LoginScreen()),
-                        );
-                      });
-                    },
-                    child: Text("Logout"),
-                  ),
                 ],
               ),
             ),
@@ -270,71 +403,80 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _editProfile() {}
-
   void _changePhoto() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 32.0),
-          child: Container(
-            height: mqData.height * 0.25,
-            width: double.infinity,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text("Pick profile picture", style: myTextStyle18(context)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    /// --- cameras button --- ///
-                    SizedBox(
-                      height: 100,
-                      width: 100,
-                      child: ElevatedButton(
-                        onPressed: _pickImageFromCamera,
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: AppColors.blue.withAlpha(10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                        ),
-                        child: Icon(
-                          CupertinoIcons.camera_fill,
-                          size: 60,
-                          color: Colors.blue.shade300,
-                        ),
-                      ),
-                    ),
-
-                    /// --- gallery button --- ///
-                    SizedBox(
-                      height: 100,
-                      width: 100,
-                      child: ElevatedButton(
-                        onPressed: _pickImageFromGallery,
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: AppColors.blue.withAlpha(10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                        ),
-                        child: Icon(
-                          CupertinoIcons.photo,
-                          size: 60,
-                          color: Colors.blue.shade300,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
             ),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Choose Profile Picture",
+                style: myTextStyle18(context, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Camera Button
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: mqData.height * 0.1,
+                        width: mqData.height * 0.1,
+                        child: FloatingActionButton(
+                          heroTag: 'camera',
+                          onPressed: _pickImageFromCamera,
+                          backgroundColor: Colors.orange.shade200,
+                          elevation: 0,
+                          child: Icon(
+                            Icons.camera_alt,
+                           size:mqData.height * .05,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text("Camera", style: myTextStyle18(context)),
+                    ],
+                  ),
+
+                  /// Gallery Button
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: mqData.height * 0.1,
+                        width: mqData.height * 0.1,
+                        child: FloatingActionButton(
+                          heroTag: 'gallery',
+                          onPressed: _pickImageFromGallery,
+                          backgroundColor: Colors.orange.shade200,
+                          elevation: 1,
+                          child:  Icon(
+                            Icons.photo_library,
+                            color: Colors.white,
+                            size: mqData.height * .05,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text("Gallery", style: myTextStyle18(context)),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
         );
       },
