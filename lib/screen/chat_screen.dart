@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart' ;
 import 'package:ping_me/helper/my_date_util.dart' ;
 import 'package:ping_me/model/chat_user_model.dart' ;
 import 'package:ping_me/model/message_model.dart' ;
+import 'package:ping_me/screen/view_profile_screen.dart';
 import 'package:ping_me/utils/custom_text_style.dart' ;
 import 'package:ping_me/widgets/message_card.dart' ;
 import '../api/apis.dart' ;
@@ -175,7 +176,10 @@ class _ChatScreenState extends State<ChatScreen> {
   /// --- here we create custom app bar --- ///
   Widget _buildAppBar() {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        /// click on user profile navigate to view profile screen
+        Navigator.push(context, MaterialPageRoute(builder: (_) => ViewProfileScreen(user: widget.user)));
+      },
       child: StreamBuilder(
         stream: APIs.getUserInfo(widget.user),
         builder: (context, snapshot) {

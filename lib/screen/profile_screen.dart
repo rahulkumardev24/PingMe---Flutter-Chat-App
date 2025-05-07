@@ -223,20 +223,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ),
-                      DropdownMenuItem(
-                        value: "Invisible",
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.visibility_off,
-                              color: Colors.grey,
-                              size: 16,
-                            ),
-                            SizedBox(width: 8),
-                            Text("Invisible"),
-                          ],
-                        ),
-                      ),
                     ],
                     onChanged: (value) {
                       if (value != null) {

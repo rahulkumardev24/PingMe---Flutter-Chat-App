@@ -1,12 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class ChatUserModel {
   late String userId;
   late String name;
   late String email;
   late String? imageUrl;
   late String? about;
+  late String? status;
   late String lastActive;
+  late String createdAt;
   late bool isOnline;
   late String? pushToken;
 
@@ -14,10 +14,12 @@ class ChatUserModel {
     required this.userId,
     required this.name,
     required this.email,
+    required this.createdAt,
     this.imageUrl,
     this.about,
     required this.lastActive,
     this.isOnline = false,
+    this.status = "Available",
     this.pushToken,
   });
 
@@ -30,8 +32,10 @@ class ChatUserModel {
       'imageUrl': imageUrl,
       'about': about,
       'lastActive': lastActive ,
+      'createdAt': createdAt,
       'isOnline': isOnline,
       'pushToken': pushToken,
+      'status' : status,
     };
   }
 
@@ -46,6 +50,8 @@ class ChatUserModel {
       lastActive:json['lastActive'],
       isOnline: json['isOnline'] ?? false,
       pushToken: json['pushToken'],
+      createdAt: json['createdAt'],
+      status: json['status'],
     );
   }
 }

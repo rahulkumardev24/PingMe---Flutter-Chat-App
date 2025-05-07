@@ -44,6 +44,8 @@ class AuthService {
             lastActive: time,
             isOnline: false,
             pushToken: "",
+            createdAt: time,
+            status: "Available"
           );
 
           /// Set user data in Firestore (only if the user is new)

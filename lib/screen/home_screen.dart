@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ping_me/api/apis.dart';
@@ -167,8 +165,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => authService.signOut(),
             backgroundColor: Colors.blue[600],
+            onPressed: () {  },
             child: const Icon(Icons.add_comment_rounded, color: Colors.white),
           ),
         ),
