@@ -5,6 +5,7 @@ import 'package:ping_me/api/apis.dart';
 import 'package:ping_me/helper/my_date_util.dart';
 import 'package:ping_me/model/message_model.dart';
 import 'package:ping_me/screen/chat_screen.dart';
+import 'package:ping_me/widgets/profile_dialog.dart';
 
 import '../model/chat_user_model.dart';
 import '../utils/custom_text_style.dart';
@@ -56,28 +57,38 @@ class _UserChatCardState extends State<UserChatCard> {
                     clipBehavior: Clip.none,
                     children: [
                       /// Profile image
-                      ClipOval(
-                        child: CachedNetworkImage(
-                          width: 56,
-                          height: 56,
-                          fit: BoxFit.cover,
-                          imageUrl: widget.user.imageUrl!,
-                          placeholder:
-                              (context, url) => SizedBox(
-                                width: 56,
-                                height: 56,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                      InkWell(
+                        onTap: () {
+                          /// call profile dialog
+                          showDialog(
+                            context: context,
+                            builder:
+                                (_context) => ProfileDialog(user: widget.user),
+                          );
+                        },
+                        child: ClipOval(
+                          child: CachedNetworkImage(
+                            width: 56,
+                            height: 56,
+                            fit: BoxFit.cover,
+                            imageUrl: widget.user.imageUrl!,
+                            placeholder:
+                                (context, url) => SizedBox(
+                                  width: 56,
+                                  height: 56,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   ),
                                 ),
-                              ),
-                          errorWidget:
-                              (context, url, error) => SizedBox(
-                                width: 56,
-                                height: 56,
-                                child: Icon(CupertinoIcons.person, size: 28),
-                              ),
+                            errorWidget:
+                                (context, url, error) => SizedBox(
+                                  width: 56,
+                                  height: 56,
+                                  child: Icon(CupertinoIcons.person, size: 28),
+                                ),
+                          ),
                         ),
                       ),
 
