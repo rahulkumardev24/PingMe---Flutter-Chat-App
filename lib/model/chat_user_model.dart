@@ -6,7 +6,7 @@ class ChatUserModel {
   late String email;
   late String? imageUrl;
   late String? about;
-  late DateTime lastActive;
+  late String lastActive;
   late bool isOnline;
   late String? pushToken;
 
@@ -29,7 +29,7 @@ class ChatUserModel {
       'email': email,
       'imageUrl': imageUrl,
       'about': about,
-      'lastActive': Timestamp.fromDate(lastActive),
+      'lastActive': lastActive ,
       'isOnline': isOnline,
       'pushToken': pushToken,
     };
@@ -43,7 +43,7 @@ class ChatUserModel {
       email: json['email'],
       imageUrl: json['imageUrl'],
       about: json['about'],
-      lastActive: (json['lastActive'] as Timestamp).toDate(),
+      lastActive:json['lastActive'],
       isOnline: json['isOnline'] ?? false,
       pushToken: json['pushToken'],
     );

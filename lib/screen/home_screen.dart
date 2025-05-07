@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ping_me/api/apis.dart';
 import 'package:ping_me/screen/auth/auth_service/auth_service.dart';
 import 'package:ping_me/screen/profile_screen.dart';
@@ -21,6 +24,21 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     APIs.getCurrentUser();
+    /// for updating user active status according to lifecycle events
+    /// resume -- active or online
+    /// pause  -- inactive or offline
+    SystemChannels.lifecycle.setMessageHandler((message) {
+      print('Message: $message');
+      if (APIs.auth.currentUser != null) {
+        if (message.toString().contains('resume')) {
+          APIs.updateActiveStatus(true);
+        }
+        if (message.toString().contains('pause')) {
+          APIs.updateActiveStatus(false);
+        }
+      }
+      return Future.value(message);
+    });
   }
 
   @override

@@ -91,6 +91,24 @@ class APIs {
     }
   }
 
+  /// ------ for getting specific info --- ///
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(
+    ChatUserModel chatUser,
+  ) {
+    return firebaseFirestore
+        .collection("users")
+        .where("userId", isEqualTo: chatUser.userId)
+        .snapshots();
+  }
+
+  /// --- update online or last seen status --- ///
+  static Future<void> updateActiveStatus(bool isOnline) async {
+    firebaseFirestore.collection("users").doc(user.uid).update({
+      "isOnline": isOnline,
+      "lastActive": DateTime.now().millisecondsSinceEpoch.toString(),
+    });
+  }
+
   /// ******************* Chat Screen Related APIs ********************* ///
   /// chats (collection) --> conversation_id (doc) --> messages (collection) --> message (doc) --> message (data)
   static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessage(

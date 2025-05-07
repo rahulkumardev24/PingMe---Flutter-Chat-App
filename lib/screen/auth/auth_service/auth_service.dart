@@ -32,7 +32,7 @@ class AuthService {
       if (user != null) {
         final userDoc = APIs.firebaseFirestore.collection('users').doc(user.uid);
         final docSnapshot = await userDoc.get();
-
+        final time = DateTime.now().millisecondsSinceEpoch.toString();
         /// If the user doesn't exist, create a new user document
         if (!docSnapshot.exists) {
           final newUser = ChatUserModel(
@@ -41,8 +41,8 @@ class AuthService {
             email: user.email ?? "",
             imageUrl: user.photoURL,
             about: "Hey, i'am using we chat",
-            lastActive: DateTime.now(),
-            isOnline: true,
+            lastActive: time,
+            isOnline: false,
             pushToken: "",
           );
 
