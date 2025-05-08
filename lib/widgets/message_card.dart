@@ -270,7 +270,6 @@ class _MessageCardState extends State<MessageCard> {
                     icon: Icon(Icons.download_rounded),
                     name: 'Save image',
                     onTap: (BuildContext) async {
-
                       try {
                         print('Image Url: ${widget.messageModel.msg}');
                         await GallerySaver.saveImage(
@@ -293,7 +292,6 @@ class _MessageCardState extends State<MessageCard> {
                       } catch (e) {
                         print('ErrorWhileSavingImg: $e');
                       }
-
                     },
                   ),
 
@@ -302,9 +300,7 @@ class _MessageCardState extends State<MessageCard> {
                 _OptionItem(
                   icon: Icon(Icons.edit_rounded),
                   name: 'Edit Message',
-                  onTap: (BuildContext) async {
-
-                  },
+                  onTap: (BuildContext) async {},
                 ),
 
               /// delete message
@@ -331,7 +327,8 @@ class _MessageCardState extends State<MessageCard> {
               _OptionItem(
                 icon: Icon(Icons.remove_red_eye_rounded),
                 name:
-                    widget.messageModel.read.isEmpty
+                    widget.messageModel.read == "false" ||
+                            widget.messageModel.read.isEmpty
                         ? 'Read At : Not seen yet'
                         : 'Read At : ${MyDateUtil.getMessageTime(time: widget.messageModel.read)}',
                 onTap: (BuildContext) {},
