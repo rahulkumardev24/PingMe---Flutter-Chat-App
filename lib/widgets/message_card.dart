@@ -300,7 +300,9 @@ class _MessageCardState extends State<MessageCard> {
                 _OptionItem(
                   icon: Icon(Icons.edit_rounded),
                   name: 'Edit Message',
-                  onTap: (BuildContext) async {},
+                  onTap: (BuildContext) {
+                    _messageUpdateDialog();
+                  },
                 ),
 
               /// delete message
@@ -337,6 +339,52 @@ class _MessageCardState extends State<MessageCard> {
           ),
         );
       },
+    );
+  }
+
+  /// dialog for updating message content
+  void _messageUpdateDialog() {
+    String updatedMessage = widget.messageModel.msg;
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            /// title
+            title: Row(
+              children: [
+                Icon(Icons.message, color: Colors.blue, size: 28),
+                Text("Update Message"),
+              ],
+            ),
+
+            /// content
+            content: TextFormField(
+              initialValue: updatedMessage,
+              maxLines: null,
+              onChanged: (value) => updatedMessage = value,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  APIs.updateMessage(widget.messageModel, updatedMessage);
+                },
+                child: Text("Update"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("cancel"),
+              ),
+            ],
+          ),
     );
   }
 }

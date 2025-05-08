@@ -150,10 +150,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemBuilder: (context, index) {
                           /// Convert doc to model
                           /// Clear and add fetched users
-                          users = list.map((doc) => ChatUserModel.fromJson(doc.data()),).toList();
+                          users =
+                              list
+                                  .map(
+                                    (doc) => ChatUserModel.fromJson(doc.data()),
+                                  )
+                                  .toList();
                           return UserChatCard(
                             user:
-                            _isSearching
+                                _isSearching
                                     ? _searchUser[index]
                                     : users[index],
                           );
@@ -168,11 +173,59 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           floatingActionButton: FloatingActionButton(
             backgroundColor: Colors.blue[600],
-            onPressed: () {  },
+            onPressed: () {
+              _userAddDialog();
+            },
             child: const Icon(Icons.add_comment_rounded, color: Colors.white),
           ),
         ),
       ),
+    );
+  }
+
+  /// add user person
+  void _userAddDialog() {
+    String email = "";
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            /// title
+            title: Row(
+              children: [
+                Icon(Icons.person_add_alt_1, color: Colors.blue, size: 28),
+                Text(" Add New User", style: myTextStyle18(context)),
+              ],
+            ),
+
+            /// content
+            content: TextFormField(
+              maxLines: null,
+              onChanged: (value) => email = value,
+              decoration: InputDecoration(
+                hintText: "Email ID",
+                prefixIcon: Icon(Icons.email),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("Add User"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("cancel"),
+              ),
+            ],
+          ),
     );
   }
 }
