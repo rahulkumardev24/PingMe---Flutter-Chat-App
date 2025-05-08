@@ -19,7 +19,7 @@ class APIs {
   static FirebaseStorage firebaseStorage = FirebaseStorage.instance;
 
   /// --- firebase messaging --- ///
- static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance ;
+  static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
 
   /// --- Current user --- ///
   static ChatUserModel? currentUser;
@@ -38,9 +38,12 @@ class APIs {
   /// Function to get current user info from 'users' collection
   static Future<void> getCurrentUser() async {
     try {
-      final snapshot = await firebaseFirestore.collection("users")
+      final snapshot =
+          await firebaseFirestore
+              .collection("users")
               .where('userId', isEqualTo: auth.currentUser?.uid)
               .get();
+
       /// here we call function to get token for push notification
       getFirebaseMessagingToken();
       if (snapshot.docs.isNotEmpty) {
@@ -125,20 +128,19 @@ class APIs {
       provisional: false,
       sound: true,
     );
-    await firebaseMessaging.getToken().then((t){
-      if(t != null){
-        currentUser!.pushToken = t ;
+    await firebaseMessaging.getToken().then((t) {
+      if (t != null) {
+        currentUser!.pushToken = t;
         print("Push Token : $t");
       }
     });
   }
 
   /// send push notification
-  static Future<void> sendPushNotification(ChatUserModel chatUser , String msg) async{
-
-
-  }
-
+  static Future<void> sendPushNotification(
+    ChatUserModel chatUser,
+    String msg,
+  ) async {}
 
   /// ******************* Chat Screen Related APIs ********************* ///
   /// chats (collection) --> conversation_id (doc) --> messages (collection) --> message (doc) --> message (data)
@@ -221,5 +223,17 @@ class APIs {
     /// updating image in firestore database
     final imageUrl = await ref.getDownloadURL();
     await sendMessage(chatUser, imageUrl, Type.image);
+  }
+
+  /// delete message
+  static Future<void> deleteMessage(MessageModel message) async {
+   await firebaseFirestore
+        .collection('chats/${getConversationId(message.toId)}/messages/')
+        .doc(message.sent)
+        .delete();
+   if(message.type == Type.image){
+     await firebaseStorage.refFromURL(message.msg).delete();
+   }
+
   }
 }

@@ -1,12 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ping_me/helper/my_date_util.dart';
 import 'package:ping_me/model/message_model.dart';
 import 'package:ping_me/utils/colors.dart';
 import 'package:ping_me/utils/custom_text_style.dart';
 
 import '../api/apis.dart';
+import '../helper/dialogs.dart';
 
 class MessageCard extends StatefulWidget {
   const MessageCard({super.key, required this.messageModel});
@@ -22,7 +24,12 @@ class _MessageCardState extends State<MessageCard> {
   @override
   Widget build(BuildContext context) {
     bool isMe = APIs.user.uid == widget.messageModel.fromId;
-    return isMe ? _orangeMessage() : _blueMessage();
+    return InkWell(
+      onLongPress: () {
+        _messageModelBottomSheet(isMe);
+      },
+      child: isMe ? _orangeMessage() : _blueMessage(),
+    );
   }
 
   /// 🟦 Sender message - current user
@@ -215,6 +222,140 @@ class _MessageCardState extends State<MessageCard> {
           ),
         ),
       ],
+    );
+  }
+
+  /// --- model bottom sheet --- ///
+  void _messageModelBottomSheet(bool isMe) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      builder: (BuildContext context) {
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              widget.messageModel.type == Type.text
+                  ?
+                  /// text copy
+                  _OptionItem(
+                    icon: Icon(Icons.copy_rounded),
+                    name: 'Copy Text',
+                    onTap: (BuildContext) async {
+                      await Clipboard.setData(
+                        ClipboardData(text: widget.messageModel.msg),
+                      ).then((value) {
+                        Navigator.pop(context);
+                        Dialogs.myShowSnackBar(
+                          context,
+                          "Text Copied",
+                          Colors.greenAccent.shade100,
+                          Colors.black54,
+                        );
+                      });
+                    },
+                  )
+                  :
+                  /// download
+                  _OptionItem(
+                    icon: Icon(Icons.download_rounded),
+                    name: 'Save image',
+                    onTap: (BuildContext) {},
+                  ),
+
+              /// edit message
+              if (widget.messageModel.type == Type.text && isMe)
+                _OptionItem(
+                  icon: Icon(Icons.edit_rounded),
+                  name: 'Edit Message',
+                  onTap: (BuildContext) {},
+                ),
+
+              /// delete message
+              if (isMe)
+                _OptionItem(
+                  icon: Icon(Icons.delete_forever_rounded),
+                  name: 'Delete Message',
+                  onTap: (BuildContext) async {
+                    await APIs.deleteMessage(widget.messageModel).then((value) {
+                      Navigator.pop(context);
+                    });
+                  },
+                ),
+
+              /// send time
+              _OptionItem(
+                icon: Icon(Icons.remove_red_eye_rounded),
+                name:
+                    'Send At : ${MyDateUtil.getMessageTime(time: widget.messageModel.sent)}',
+                onTap: (BuildContext) {},
+              ),
+
+              /// read time
+              _OptionItem(
+                icon: Icon(Icons.remove_red_eye_rounded),
+                name:
+                    widget.messageModel.read.isEmpty
+                        ? 'Read At : Not seen yet'
+                        : 'Read At : ${MyDateUtil.getMessageTime(time: widget.messageModel.read)}',
+                onTap: (BuildContext) {},
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// custom options card (for copy, edit, delete, etc.)
+class _OptionItem extends StatelessWidget {
+  final Icon icon;
+  final String name;
+  final Function(BuildContext) onTap;
+
+  const _OptionItem({
+    required this.icon,
+    required this.name,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final mqData = MediaQuery.of(context).size;
+    return InkWell(
+      onTap: () => onTap(context),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: mqData.width * .05,
+          top: mqData.height * .015,
+          bottom: mqData.height * .015,
+        ),
+        child: Row(
+          children: [
+            icon,
+            Flexible(
+              child: Text(
+                '    $name',
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.black54,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
