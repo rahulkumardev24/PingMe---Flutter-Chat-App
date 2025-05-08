@@ -1,1 +1,38 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"pingmechatapp-7cd56","appId":"1:491986263774:android:40c35ff23ca4effe8cec4f","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"pingmechatapp-7cd56","configurations":{"android":"1:491986263774:android:40c35ff23ca4effe8cec4f","ios":"1:491986263774:ios:d8b458a6acd1b04d8cec4f"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "pingmechatapp-7cd56",
+          "appId": "1:491986263774:android:40c35ff23ca4effe8cec4f",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "pingmechatapp-7cd56",
+          "configurations": {
+            "android": "1:491986263774:android:40c35ff23ca4effe8cec4f",
+            "ios": "1:491986263774:ios:d8b458a6acd1b04d8cec4f"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ]
+}

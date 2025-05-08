@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:ping_me/model/message_model.dart';
 import '../model/chat_user_model.dart';
@@ -16,6 +17,9 @@ class APIs {
 
   /// --- Firebase storage --- ///
   static FirebaseStorage firebaseStorage = FirebaseStorage.instance;
+
+  /// --- firebase messaging --- ///
+ static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance ;
 
   /// --- Current user --- ///
   static ChatUserModel? currentUser;
@@ -34,11 +38,11 @@ class APIs {
   /// Function to get current user info from 'users' collection
   static Future<void> getCurrentUser() async {
     try {
-      final snapshot =
-          await firebaseFirestore
-              .collection("users")
+      final snapshot = await firebaseFirestore.collection("users")
               .where('userId', isEqualTo: auth.currentUser?.uid)
               .get();
+      /// here we call function to get token for push notification
+      getFirebaseMessagingToken();
       if (snapshot.docs.isNotEmpty) {
         currentUser = ChatUserModel.fromJson(snapshot.docs.first.data());
       }
@@ -106,8 +110,35 @@ class APIs {
     firebaseFirestore.collection("users").doc(user.uid).update({
       "isOnline": isOnline,
       "lastActive": DateTime.now().millisecondsSinceEpoch.toString(),
+      "pushToken": currentUser!.pushToken,
     });
   }
+
+  /// For getting firebase messaging (push Notification)
+  static Future<void> getFirebaseMessagingToken() async {
+    await firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+    await firebaseMessaging.getToken().then((t){
+      if(t != null){
+        currentUser!.pushToken = t ;
+        print("Push Token : $t");
+      }
+    });
+  }
+
+  /// send push notification
+  static Future<void> sendPushNotification(ChatUserModel chatUser , String msg) async{
+
+
+  }
+
 
   /// ******************* Chat Screen Related APIs ********************* ///
   /// chats (collection) --> conversation_id (doc) --> messages (collection) --> message (doc) --> message (data)
