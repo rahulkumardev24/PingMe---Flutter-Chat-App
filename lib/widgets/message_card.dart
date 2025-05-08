@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:ping_me/helper/my_date_util.dart';
 import 'package:ping_me/model/message_model.dart';
 import 'package:ping_me/utils/colors.dart';
@@ -265,11 +265,36 @@ class _MessageCardState extends State<MessageCard> {
                     },
                   )
                   :
-                  /// download
+                  /// --- download --- ///
                   _OptionItem(
                     icon: Icon(Icons.download_rounded),
                     name: 'Save image',
-                    onTap: (BuildContext) {},
+                    onTap: (BuildContext) async {
+
+                      try {
+                        print('Image Url: ${widget.messageModel.msg}');
+                        await GallerySaver.saveImage(
+                          widget.messageModel.msg,
+                          albumName: 'We Chat',
+                        ).then((success) {
+                          if (BuildContext.mounted) {
+                            //for hiding bottom sheet
+                            Navigator.pop(context);
+                            if (success != null && success) {
+                              Dialogs.myShowSnackBar(
+                                context,
+                                "Image is Downloaded",
+                                Colors.greenAccent.shade200,
+                                Colors.black54,
+                              );
+                            }
+                          }
+                        });
+                      } catch (e) {
+                        print('ErrorWhileSavingImg: $e');
+                      }
+
+                    },
                   ),
 
               /// edit message
@@ -277,7 +302,9 @@ class _MessageCardState extends State<MessageCard> {
                 _OptionItem(
                   icon: Icon(Icons.edit_rounded),
                   name: 'Edit Message',
-                  onTap: (BuildContext) {},
+                  onTap: (BuildContext) async {
+
+                  },
                 ),
 
               /// delete message
