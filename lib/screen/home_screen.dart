@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          /// --- Body --- ///
+          /// ----- Body ---- ///
           body: Column(
             children: [
               _isSearching
@@ -135,59 +135,66 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: StreamBuilder(
                   stream: APIs.getMyUsersId(),
                   builder: (context, snapshot) {
-                    if(snapshot.connectionState == ConnectionState.waiting){
-                      return Center(child: CircularProgressIndicator(),);
-                    }
-
-                    return  StreamBuilder(
-                        stream: APIs.getAllUsers(
-                          List<String>.from(
-                            snapshot.data!.docs.map(
-                              (e) => e.id,
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      Center(child: Text("Something went going wrong"));
+                    } else if (snapshot.hasData) {
+                      final data = snapshot.data!.docs;
+                      if (data.isEmpty) {
+                        return Center(child: Text("No user found"));
+                      }
+                        return StreamBuilder(
+                          stream: APIs.getAllUsers(
+                            List<String>.from(
+                              snapshot.data!.docs.map((e) => e.id),
                             ),
                           ),
-                        ),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasError) {
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                child: Text("Something went wrong"),
+                              );
+                            } else if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return Center(child: Text("No user found"));
+                            } else if (snapshot.hasData) {
+                              final list = snapshot.data!.docs;
+                              return ListView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                itemCount:
+                                    _isSearching
+                                        ? _searchUser.length
+                                        : list.length,
+                                itemBuilder: (context, index) {
+                                  /// Convert doc to model
+                                  /// Clear and add fetched users
+                                  users =
+                                      list
+                                          .map(
+                                            (doc) => ChatUserModel.fromJson(
+                                              doc.data(),
+                                            ),
+                                          )
+                                          .toList();
+                                  return UserChatCard(
+                                    user:
+                                        _isSearching
+                                            ? _searchUser[index]
+                                            : users[index],
+                                  );
+                                },
+                              );
+                            }
                             return Center(child: Text("Something went wrong"));
-                          } else if (!snapshot.hasData ||
-                              snapshot.data!.docs.isEmpty) {
-                            return Center(child: Text("No user found"));
-                          } else if (snapshot.hasData) {
-                            final list = snapshot.data!.docs;
-                            return ListView.builder(
-                              physics: const BouncingScrollPhysics(),
-                              itemCount:
-                                  _isSearching
-                                      ? _searchUser.length
-                                      : list.length,
-                              itemBuilder: (context, index) {
-                                /// Convert doc to model
-                                /// Clear and add fetched users
-                                users =
-                                    list
-                                        .map(
-                                          (doc) => ChatUserModel.fromJson(
-                                            doc.data(),
-                                          ),
-                                        )
-                                        .toList();
-                                return UserChatCard(
-                                  user:
-                                      _isSearching
-                                          ? _searchUser[index]
-                                          : users[index],
-                                );
-                              },
-                            );
-                          }
-                          return Center(child: Text("Something went wrong"));
-                        },
-                      );
+                          },
+                        );
                     }
+                    return Center(child: Text("No user found "));
+                  },
                 ),
               ),
             ],

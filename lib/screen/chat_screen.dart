@@ -1,15 +1,15 @@
-import 'dart:io' ;
-import 'package:cached_network_image/cached_network_image.dart' ;
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:flutter/material.dart' ;
-import 'package:image_picker/image_picker.dart' ;
-import 'package:ping_me/helper/my_date_util.dart' ;
-import 'package:ping_me/model/chat_user_model.dart' ;
-import 'package:ping_me/model/message_model.dart' ;
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:ping_me/helper/my_date_util.dart';
+import 'package:ping_me/model/chat_user_model.dart';
+import 'package:ping_me/model/message_model.dart';
 import 'package:ping_me/screen/view_profile_screen.dart';
-import 'package:ping_me/utils/custom_text_style.dart' ;
-import 'package:ping_me/widgets/message_card.dart' ;
-import '../api/apis.dart' ;
+import 'package:ping_me/utils/custom_text_style.dart';
+import 'package:ping_me/widgets/message_card.dart';
+import '../api/apis.dart';
 import '../helper/dialogs.dart';
 import '../utils/colors.dart';
 
@@ -178,16 +178,22 @@ class _ChatScreenState extends State<ChatScreen> {
     return InkWell(
       onTap: () {
         /// click on user profile navigate to view profile screen
-        Navigator.push(context, MaterialPageRoute(builder: (_) => ViewProfileScreen(user: widget.user)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ViewProfileScreen(user: widget.user),
+          ),
+        );
       },
       child: StreamBuilder(
         stream: APIs.getUserInfo(widget.user),
         builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.waiting){
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return LinearProgressIndicator();
           }
           final data = snapshot.data?.docs ?? [];
-          final list = data.map((e) => ChatUserModel.fromJson(e.data())).toList();
+          final list =
+              data.map((e) => ChatUserModel.fromJson(e.data())).toList();
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -344,6 +350,23 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: Icon(Icons.send, color: Colors.white),
               onPressed: () {
                 if (_textController.text.isEmpty) {
+                  /// on first message (add user to my friend list (user list))
+                  if (_list.isEmpty) {
+                    APIs.sendFirstMessage(
+                      widget.user,
+                      _textController.text,
+                      Type.text,
+                    );
+                  }
+                  /// --- simply send message
+                  else {
+                    APIs.sendMessage(
+                      widget.user,
+                      _textController.text,
+                      Type.text,
+                    );
+                  }
+                  _textController.text = "";
                   Dialogs.myShowSnackBar(
                     context,
                     "Please type a message",

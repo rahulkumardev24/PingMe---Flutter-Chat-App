@@ -87,6 +87,20 @@ class APIs {
     }
   }
 
+
+  /// for adding an user to my user when first message is send
+  static Future<void> sendFirstMessage(
+      ChatUserModel chatUser, String msg, Type type) async {
+    await firebaseFirestore
+        .collection('users')
+        .doc(chatUser.userId)
+        .collection('my_users')
+        .doc(user.uid)
+        .set({}).then((value) => sendMessage(chatUser, msg, type));
+  }
+
+
+
   /// ---  Function to  update profile picture in 'users' collection --- ///
   static Future<void> updateUserProfilePicture(File file) async {
     try {
