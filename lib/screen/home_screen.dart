@@ -5,6 +5,7 @@ import 'package:ping_me/screen/auth/auth_service/auth_service.dart';
 import 'package:ping_me/screen/profile_screen.dart';
 import 'package:ping_me/utils/custom_text_style.dart';
 import 'package:ping_me/widgets/user_chat_card.dart';
+import '../helper/dialogs.dart';
 import '../model/chat_user_model.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -132,41 +133,61 @@ class _HomeScreenState extends State<HomeScreen> {
                   : SizedBox(),
               Expanded(
                 child: StreamBuilder(
-                  stream: APIs.getAllUsers(),
+                  stream: APIs.getMyUsersId(),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text("Something went wrong"));
-                    } else if (!snapshot.hasData ||
-                        snapshot.data!.docs.isEmpty) {
-                      return Center(child: Text("No user found"));
-                    } else if (snapshot.hasData) {
-                      final list = snapshot.data!.docs;
-                      return ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        itemCount:
-                            _isSearching ? _searchUser.length : list.length,
-                        itemBuilder: (context, index) {
-                          /// Convert doc to model
-                          /// Clear and add fetched users
-                          users =
-                              list
-                                  .map(
-                                    (doc) => ChatUserModel.fromJson(doc.data()),
-                                  )
-                                  .toList();
-                          return UserChatCard(
-                            user:
-                                _isSearching
-                                    ? _searchUser[index]
-                                    : users[index],
-                          );
+                    if(snapshot.connectionState == ConnectionState.waiting){
+                      return Center(child: CircularProgressIndicator(),);
+                    }
+
+                    return  StreamBuilder(
+                        stream: APIs.getAllUsers(
+                          List<String>.from(
+                            snapshot.data!.docs.map(
+                              (e) => e.id,
+                            ),
+                          ),
+                        ),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(child: Text("Something went wrong"));
+                          } else if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
+                            return Center(child: Text("No user found"));
+                          } else if (snapshot.hasData) {
+                            final list = snapshot.data!.docs;
+                            return ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              itemCount:
+                                  _isSearching
+                                      ? _searchUser.length
+                                      : list.length,
+                              itemBuilder: (context, index) {
+                                /// Convert doc to model
+                                /// Clear and add fetched users
+                                users =
+                                    list
+                                        .map(
+                                          (doc) => ChatUserModel.fromJson(
+                                            doc.data(),
+                                          ),
+                                        )
+                                        .toList();
+                                return UserChatCard(
+                                  user:
+                                      _isSearching
+                                          ? _searchUser[index]
+                                          : users[index],
+                                );
+                              },
+                            );
+                          }
+                          return Center(child: Text("Something went wrong"));
                         },
                       );
                     }
-                    return Center(child: Text("Something went wrong"));
-                  },
                 ),
               ),
             ],
@@ -214,13 +235,37 @@ class _HomeScreenState extends State<HomeScreen> {
             actions: [
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  /// hide alert
+                  if (email.isNotEmpty) {
+                    APIs.addChatUser(email).then((onValue) {
+                      if (!onValue) {
+                        Dialogs.myShowSnackBar(
+                          context,
+                          "User does not exist",
+                          Colors.greenAccent.shade200,
+                          Colors.black54,
+                        );
+                      }
+                    });
+                    Navigator.pop(context);
+                  } else {
+                    Dialogs.myShowSnackBar(
+                      context,
+                      "Plz enter email ID",
+                      Colors.greenAccent.shade200,
+                      Colors.black54,
+                    );
+                  }
                 },
                 child: Text("Add User"),
               ),
+
+              /// cancel button
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  if (email.isNotEmpty) {
+                    Navigator.pop(context);
+                  }
                 },
                 child: Text("cancel"),
               ),

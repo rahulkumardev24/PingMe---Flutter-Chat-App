@@ -28,10 +28,43 @@ class APIs {
   static User get user => auth.currentUser!;
 
   ///  Function to get all users from 'users' collection
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers() {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers(
+    List<String> userIds,
+  ) {
     return firebaseFirestore
         .collection("users")
-        .where('userId', isNotEqualTo: auth.currentUser?.uid)
+        .where('userId', whereIn: userIds)
+        .snapshots();
+  }
+
+  ///  for adding an chat user info
+  static Future<bool> addChatUser(String email) async {
+    final data =
+        await firebaseFirestore
+            .collection("users")
+            .where("email", isEqualTo: email)
+            .get();
+    if (data.docs.isNotEmpty && data.docs.first.id != user.uid) {
+      /// if user exit
+      firebaseFirestore
+          .collection("users")
+          .doc(user.uid)
+          .collection("my_users")
+          .doc(data.docs.first.id)
+          .set({});
+      return true;
+    } else {
+      /// user does not exit
+      return false;
+    }
+  }
+
+  ///  Function to get all users from 'users' collection
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getMyUsersId() {
+    return firebaseFirestore
+        .collection("users")
+        .doc(user.uid)
+        .collection("my_users")
         .snapshots();
   }
 
@@ -227,24 +260,23 @@ class APIs {
 
   /// delete message
   static Future<void> deleteMessage(MessageModel message) async {
-   await firebaseFirestore
-        .collection('chats/${getConversationId(message.toId)}/messages/')
-        .doc(message.sent)
-        .delete();
-   if(message.type == Type.image){
-     await firebaseStorage.refFromURL(message.msg).delete();
-   }
-
-  }
-
-  /// delete update
-  static Future<void> updateMessage(MessageModel message , String updatedMsg) async {
     await firebaseFirestore
         .collection('chats/${getConversationId(message.toId)}/messages/')
         .doc(message.sent)
-        .update({"msg" : updatedMsg});
-   
-
+        .delete();
+    if (message.type == Type.image) {
+      await firebaseStorage.refFromURL(message.msg).delete();
+    }
   }
-  
+
+  /// delete update
+  static Future<void> updateMessage(
+    MessageModel message,
+    String updatedMsg,
+  ) async {
+    await firebaseFirestore
+        .collection('chats/${getConversationId(message.toId)}/messages/')
+        .doc(message.sent)
+        .update({"msg": updatedMsg});
+  }
 }
