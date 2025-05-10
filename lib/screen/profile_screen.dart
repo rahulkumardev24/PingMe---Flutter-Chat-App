@@ -25,6 +25,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   File? imageFile;
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialize status with user's current status
+    _status = widget.user.status ?? "Available";
+  }
+
   /// --- pick image form camera --- ///
   Future<void> _pickImageFromCamera() async {
     final pickedImage = await ImagePicker().pickImage(
@@ -313,6 +320,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onChanged: (value) {
                           if (value != null) {
                             setState(() => _status = value);
+                            /// Update the user model immediately when status changes
+                            APIs.currentUser?.status = value;
                           }
                         },
                         dropdownColor: Theme.of(context).cardColor,
@@ -331,6 +340,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           _formKey.currentState!.save();
+                          /// Ensure status is saved to current user
+                          APIs.currentUser?.status = _status;
                           APIs.updateCurrentUser();
                           Dialogs.myShowSnackBar(
                             context,

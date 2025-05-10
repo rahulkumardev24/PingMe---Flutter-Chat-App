@@ -144,54 +144,45 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (data.isEmpty) {
                         return Center(child: Text("No user found"));
                       }
-                        return StreamBuilder(
-                          stream: APIs.getAllUsers(
-                            List<String>.from(
-                              snapshot.data!.docs.map((e) => e.id),
-                            ),
+                      return StreamBuilder(
+                        stream: APIs.getAllUsers(
+                          List<String>.from(
+                            snapshot.data!.docs.map((e) => e.id),
                           ),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
-                            } else if (snapshot.hasError) {
-                              return Center(
-                                child: Text("Something went wrong"),
-                              );
-                            } else if (!snapshot.hasData ||
-                                snapshot.data!.docs.isEmpty) {
-                              return Center(child: Text("No user found"));
-                            } else if (snapshot.hasData) {
-                              final list = snapshot.data!.docs;
-                              return ListView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                itemCount:
-                                    _isSearching
-                                        ? _searchUser.length
-                                        : list.length,
-                                itemBuilder: (context, index) {
-                                  /// Convert doc to model
-                                  /// Clear and add fetched users
-                                  users =
-                                      list
-                                          .map(
-                                            (doc) => ChatUserModel.fromJson(
-                                              doc.data(),
-                                            ),
-                                          )
-                                          .toList();
-                                  return UserChatCard(
-                                    user:
-                                        _isSearching
-                                            ? _searchUser[index]
-                                            : users[index],
-                                  );
-                                },
-                              );
-                            }
+                        ),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
                             return Center(child: Text("Something went wrong"));
-                          },
-                        );
+                          } else if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
+                            return Center(child: Text("No user found"));
+                          } else if (snapshot.hasData) {
+                            final list = snapshot.data!.docs;
+                            return ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              itemCount:
+                                  _isSearching
+                                      ? _searchUser.length
+                                      : list.length,
+                              itemBuilder: (context, index) {
+                                /// Convert doc to model
+                                /// Clear and add fetched users
+                                users = list.map((doc) => ChatUserModel.fromJson(doc.data(),),).toList();
+                                return UserChatCard(
+                                  user:
+                                      _isSearching
+                                          ? _searchUser[index]
+                                          : users[index],
+                                );
+                              },
+                            );
+                          }
+                          return Center(child: Text("Something went wrong"));
+                        },
+                      );
                     }
                     return Center(child: Text("No user found "));
                   },

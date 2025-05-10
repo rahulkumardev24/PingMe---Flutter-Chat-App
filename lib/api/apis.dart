@@ -89,6 +89,7 @@ class APIs {
 
 
   /// for adding an user to my user when first message is send
+  // for adding an user to my user when first message is send
   static Future<void> sendFirstMessage(
       ChatUserModel chatUser, String msg, Type type) async {
     await firebaseFirestore
