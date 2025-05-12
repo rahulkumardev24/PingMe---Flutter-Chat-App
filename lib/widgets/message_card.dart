@@ -6,7 +6,6 @@ import 'package:ping_me/helper/my_date_util.dart';
 import 'package:ping_me/model/message_model.dart';
 import 'package:ping_me/utils/colors.dart';
 import 'package:ping_me/utils/custom_text_style.dart';
-
 import '../api/apis.dart';
 import '../helper/dialogs.dart';
 
@@ -231,110 +230,18 @@ class _MessageCardState extends State<MessageCard> {
       context: context,
       backgroundColor: Colors.white,
       showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (BuildContext context) {
         return Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-          ),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              widget.messageModel.type == Type.text
-                  ?
-                  /// text copy
-                  _OptionItem(
-                    icon: Icon(Icons.copy_rounded),
-                    name: 'Copy Text',
-                    onTap: (BuildContext) async {
-                      await Clipboard.setData(
-                        ClipboardData(text: widget.messageModel.msg),
-                      ).then((value) {
-                        Navigator.pop(context);
-                        Dialogs.myShowSnackBar(
-                          context,
-                          "Text Copied",
-                          Colors.greenAccent.shade100,
-                          Colors.black54,
-                        );
-                      });
-                    },
-                  )
-                  :
-                  /// --- download --- ///
-                  _OptionItem(
-                    icon: Icon(Icons.download_rounded),
-                    name: 'Save image',
-                    onTap: (BuildContext) async {
-                      try {
-                        print('Image Url: ${widget.messageModel.msg}');
-                        await GallerySaver.saveImage(
-                          widget.messageModel.msg,
-                          albumName: 'We Chat',
-                        ).then((success) {
-                          if (BuildContext.mounted) {
-                            //for hiding bottom sheet
-                            Navigator.pop(context);
-                            if (success != null && success) {
-                              Dialogs.myShowSnackBar(
-                                context,
-                                "Image is Downloaded",
-                                Colors.greenAccent.shade200,
-                                Colors.black54,
-                              );
-                            }
-                          }
-                        });
-                      } catch (e) {
-                        print('ErrorWhileSavingImg: $e');
-                      }
-                    },
-                  ),
-
-              /// edit message
-              if (widget.messageModel.type == Type.text && isMe)
-                _OptionItem(
-                  icon: Icon(Icons.edit_rounded),
-                  name: 'Edit Message',
-                  onTap: (BuildContext) {
-                    _messageUpdateDialog();
-                  },
-                ),
-
-              /// delete message
-              if (isMe)
-                _OptionItem(
-                  icon: Icon(Icons.delete_forever_rounded),
-                  name: 'Delete Message',
-                  onTap: (BuildContext) async {
-                    await APIs.deleteMessage(widget.messageModel).then((value) {
-                      Navigator.pop(context);
-                    });
-                  },
-                ),
-
-              /// send time
-              _OptionItem(
-                icon: Icon(Icons.remove_red_eye_rounded),
-                name:
-                    'Send At : ${MyDateUtil.getMessageTime(time: widget.messageModel.sent)}',
-                onTap: (BuildContext) {},
-              ),
-
-              /// read time
-              _OptionItem(
-                icon: Icon(Icons.remove_red_eye_rounded),
-                name:
-                    widget.messageModel.read == "false" ||
-                            widget.messageModel.read.isEmpty
-                        ? 'Read At : Not seen yet'
-                        : 'Read At : ${MyDateUtil.getMessageTime(time: widget.messageModel.read)}',
-                onTap: (BuildContext) {},
-              ),
+              /// Message Options List
+              ..._buildOptionItems(isMe),
+              SizedBox(height: mqData.height * .05),
             ],
           ),
         );
@@ -342,49 +249,245 @@ class _MessageCardState extends State<MessageCard> {
     );
   }
 
+  List<Widget> _buildOptionItems(bool isMe) {
+    return [
+      /// Copy or Download option
+      _OptionItem(
+        icon: Icon(
+          widget.messageModel.type == Type.text
+              ? Icons.copy_rounded
+              : Icons.download_rounded,
+          color: Colors.blue.shade600,
+        ),
+        name:
+            widget.messageModel.type == Type.text ? 'Copy Text' : 'Save Image',
+        description:
+            widget.messageModel.type == Type.text
+                ? 'Copy message to clipboard'
+                : 'Save image to gallery',
+        onTap: (context) async {
+          if (widget.messageModel.type == Type.text) {
+            await Clipboard.setData(
+              ClipboardData(text: widget.messageModel.msg),
+            );
+            Navigator.pop(context);
+            Dialogs.myShowSnackBar(
+              context,
+              "Text Copied",
+              Colors.greenAccent.shade100,
+              Colors.black54,
+            );
+          } else {
+            try {
+              await GallerySaver.saveImage(
+                widget.messageModel.msg,
+                albumName: 'Ping Me',
+              ).then((success) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  if (success != null && success) {
+                    Dialogs.myShowSnackBar(
+                      context,
+                      "Image Downloaded",
+                      Colors.greenAccent.shade200,
+                      Colors.black54,
+                    );
+                  }
+                }
+              });
+            } catch (e) {
+              debugPrint('ErrorWhileSavingImg: $e');
+            }
+          }
+        },
+      ),
+
+      /// Edit option (only for text messages sent by me)
+      if (widget.messageModel.type == Type.text && isMe)
+        _OptionItem(
+          icon: Icon(Icons.edit_rounded, color: Colors.orange.shade600),
+          name: 'Edit Message',
+          description: 'Modify this message',
+          onTap: (context) {
+            Navigator.pop(context);
+            _messageUpdateDialog();
+          },
+        ),
+
+      // Delete option (only for my messages)
+      if (isMe)
+        _OptionItem(
+          icon: Icon(Icons.delete_forever_rounded, color: Colors.red.shade600),
+          name: 'Delete Message',
+          description: 'Remove this message for everyone',
+          onTap: (context) async {
+            await APIs.deleteMessage(widget.messageModel);
+            Navigator.pop(context);
+          },
+        ),
+
+      // Message timestamps
+      _OptionItem(
+        icon: Icon(Icons.access_time_rounded, color: Colors.grey.shade600),
+        name:
+            'Sent at ${MyDateUtil.getMessageTime(time: widget.messageModel.sent)}',
+        onTap: (context) {},
+      ),
+
+      // Read receipt
+      _OptionItem(
+        icon: Icon(
+          Icons.done_all_rounded,
+          color:
+              widget.messageModel.read == "false" ||
+                      widget.messageModel.read.isEmpty
+                  ? Colors.grey
+                  : Colors.blue,
+        ),
+        name:
+            widget.messageModel.read == "false" ||
+                    widget.messageModel.read.isEmpty
+                ? 'Not seen yet'
+                : 'Seen at ${MyDateUtil.getMessageTime(time: widget.messageModel.read)}',
+        onTap: (context) {},
+      ),
+    ];
+  }
+
   /// dialog for updating message content
   void _messageUpdateDialog() {
+    // Check if widget is still mounted before proceeding
+    if (!mounted) return;
+
     String updatedMessage = widget.messageModel.msg;
+
     showDialog(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            /// title
-            title: Row(
+      builder: (BuildContext dialogContext) {
+        // Check again in case widget was disposed while dialog was building
+        if (!mounted) return const SizedBox.shrink();
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.message, color: Colors.blue, size: 28),
-                Text("Update Message"),
+                /// Header
+                Row(
+                  children: [
+                    Icon(Icons.edit_rounded, color: AppColors.blue, size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      "Edit Message",
+                      style: myTextStyle18(
+                        context,
+                        fontWeight: FontWeight.w600,
+                        fontColor: AppColors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                /// Text Field
+                TextFormField(
+                  initialValue: updatedMessage,
+                  maxLines: 4,
+                  minLines: 1,
+                  onChanged: (value) => updatedMessage = value,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.all(16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.blue.shade400,
+                        width: 1.5,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                  ),
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+
+                const SizedBox(height: 24),
+
+                /// Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.grey.shade700,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                      ),
+                      child: Text("Cancel", style: myTextStyle18(context)),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          // Use dialogContext for navigation
+                          Navigator.pop(dialogContext);
+                          if (mounted) {
+                            await APIs.updateMessage(
+                              widget.messageModel,
+                              updatedMessage,
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Failed to update message: $e"),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        "Update",
+                        style: myTextStyle18(
+                          context,
+                          fontColor: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-
-            /// content
-            content: TextFormField(
-              initialValue: updatedMessage,
-              maxLines: null,
-              onChanged: (value) => updatedMessage = value,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  APIs.updateMessage(widget.messageModel, updatedMessage);
-                },
-                child: Text("Update"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("cancel"),
-              ),
-            ],
           ),
+        );
+      },
     );
   }
 }
@@ -393,41 +496,45 @@ class _MessageCardState extends State<MessageCard> {
 class _OptionItem extends StatelessWidget {
   final Icon icon;
   final String name;
+  final String? description;
   final Function(BuildContext) onTap;
 
   const _OptionItem({
     required this.icon,
     required this.name,
+    this.description,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final mqData = MediaQuery.of(context).size;
-    return InkWell(
-      onTap: () => onTap(context),
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: mqData.width * .05,
-          top: mqData.height * .015,
-          bottom: mqData.height * .015,
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: icon.color?.withOpacity(0.2),
+          shape: BoxShape.circle,
         ),
-        child: Row(
-          children: [
-            icon,
-            Flexible(
-              child: Text(
-                '    $name',
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Colors.black54,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: Center(child: icon),
       ),
+
+      /// title
+      title: Text(
+        name,
+        style: myTextStyle15(context, fontWeight: FontWeight.w500),
+      ),
+
+      /// sub title
+      subtitle:
+          description != null
+              ? Text(
+                description!,
+                style: myTextStyle12(context, fontColor: Colors.grey.shade600),
+              )
+              : null,
+      onTap: () => onTap(context),
     );
   }
 }

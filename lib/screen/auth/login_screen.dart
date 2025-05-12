@@ -12,7 +12,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final AuthService _authService = AuthService();
   late AnimationController animationController;
   var radiusList = [150.0, 200.0, 250.0, 300.0, 350.0];
@@ -29,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     });
     animationController.repeat();
   }
+
   @override
   void dispose() {
     animationController.dispose();
@@ -39,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     /// Show progress bar
     Dialogs.myShowProgressbar(context);
     final user = await _authService.signInWithGoogle();
+
     /// Dismiss the progress bar
     Navigator.pop(context);
     if (user != null) {
@@ -48,9 +51,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         MaterialPageRoute(builder: (_) => HomeScreen()),
       );
     } else {
-     Dialogs.myShowSnackBar(context, "Something went wrong", Colors.red, Colors.white);
+      Dialogs.myShowSnackBar(
+        context,
+        "Something went wrong",
+        Colors.red,
+        Colors.white,
+      );
     }
   }
+
   late Size deviceSize;
   @override
   Widget build(BuildContext context) {
@@ -105,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xffffda8c),
                   ),
-                  onPressed: ()=> loginWithGoogle(context),
+                  onPressed: () => loginWithGoogle(context),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [

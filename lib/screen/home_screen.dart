@@ -7,6 +7,7 @@ import 'package:ping_me/utils/custom_text_style.dart';
 import 'package:ping_me/widgets/user_chat_card.dart';
 import '../helper/dialogs.dart';
 import '../model/chat_user_model.dart';
+import '../utils/colors.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -62,9 +63,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
           /// --- App bar --- ///
           appBar: AppBar(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(40)),
+            ),
             title: Text(
               "Ping Me",
-              style: myTextStyle18(
+              style: myTextStyle24(
                 context,
               ).copyWith(fontWeight: FontWeight.bold, color: Colors.white),
             ),
@@ -100,15 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
             elevation: 0,
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue[800]!, Colors.blue[600]!],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
+            backgroundColor: AppColors.primary,
           ),
 
           /// ----- Body ---- ///
@@ -142,7 +138,69 @@ class _HomeScreenState extends State<HomeScreen> {
                     } else if (snapshot.hasData) {
                       final data = snapshot.data!.docs;
                       if (data.isEmpty) {
-                        return Center(child: Text("No user found"));
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.person,
+                                  size: 70,
+                                  color: Colors.black38,
+                                ),
+                                SizedBox(height: 20),
+                                Text(
+                                  "Your contacts list is empty",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "Tap the + button to add new users",
+                                  textAlign: TextAlign.center,
+                                  style: myTextStyle18(
+                                    context,
+                                    fontColor: Colors.grey.shade500,
+                                  ),
+                                ),
+                                SizedBox(height: 20),
+                                ElevatedButton.icon(
+                                  onPressed: () => _userAddDialog(),
+                                  icon: Icon(
+                                    Icons.person_add_alt_1,
+                                    size: 27,
+                                    color: AppColors.primary,
+                                  ),
+                                  label: Text(
+                                    "Add User",
+                                    style: myTextStyle15(
+                                      context,
+                                      fontColor: AppColors.primary,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange.shade50,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(60),
+                                      side: BorderSide(
+                                        width: 1,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
                       }
                       return StreamBuilder(
                         stream: APIs.getAllUsers(
@@ -170,7 +228,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemBuilder: (context, index) {
                                 /// Convert doc to model
                                 /// Clear and add fetched users
-                                users = list.map((doc) => ChatUserModel.fromJson(doc.data(),),).toList();
+                                users =
+                                    list
+                                        .map(
+                                          (doc) => ChatUserModel.fromJson(
+                                            doc.data(),
+                                          ),
+                                        )
+                                        .toList();
                                 return UserChatCard(
                                   user:
                                       _isSearching
@@ -190,8 +255,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+
+          /// floating action button
           floatingActionButton: FloatingActionButton(
-            backgroundColor: Colors.blue[600],
+            backgroundColor: AppColors.secondary,
+            elevation: 0,
             onPressed: () {
               _userAddDialog();
             },
@@ -205,69 +273,156 @@ class _HomeScreenState extends State<HomeScreen> {
   /// add user person
   void _userAddDialog() {
     String email = "";
+    final _formKey = GlobalKey<FormState>();
     showDialog(
       context: context,
       builder:
-          (_) => AlertDialog(
-            /// title
-            title: Row(
-              children: [
-                Icon(Icons.person_add_alt_1, color: Colors.blue, size: 28),
-                Text(" Add New User", style: myTextStyle18(context)),
-              ],
+          (_) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
+            backgroundColor: Colors.blue.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// Title Section
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person_add_alt_1,
+                        color: AppColors.blue,
+                        size: 30,
+                      ),
+                      const SizedBox(width: 10),
+                      Text("Add New User", style: myTextStyle18(context)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
 
-            /// content
-            content: TextFormField(
-              maxLines: null,
-              onChanged: (value) => email = value,
-              decoration: InputDecoration(
-                hintText: "Email ID",
-                prefixIcon: Icon(Icons.email),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  /// hide alert
-                  if (email.isNotEmpty) {
-                    APIs.addChatUser(email).then((onValue) {
-                      if (!onValue) {
-                        Dialogs.myShowSnackBar(
+                  /// Form Section
+                  Form(
+                    key: _formKey,
+                    child: TextFormField(
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an email';
+                        }
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) => email = value,
+                      decoration: InputDecoration(
+                        hintText: "user@example.com",
+                        hintStyle: myTextStyle15(
                           context,
-                          "User does not exist",
-                          Colors.greenAccent.shade200,
-                          Colors.black54,
-                        );
-                      }
-                    });
-                    Navigator.pop(context);
-                  } else {
-                    Dialogs.myShowSnackBar(
-                      context,
-                      "Plz enter email ID",
-                      Colors.greenAccent.shade200,
-                      Colors.black54,
-                    );
-                  }
-                },
-                child: Text("Add User"),
-              ),
+                          fontColor: Colors.black54,
+                        ),
+                        labelText: "Email Address",
+                        labelStyle: myTextStyle15(
+                          context,
+                          fontColor: AppColors.primary,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          color: Colors.blue.shade600,
+                        ),
+                        filled: true,
+                        fillColor: Colors.blue.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 16,
+                        ),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                  ),
 
-              /// cancel button
-              ElevatedButton(
-                onPressed: () {
-                  if (email.isNotEmpty) {
-                    Navigator.pop(context);
-                  }
-                },
-                child: Text("cancel"),
+                  const SizedBox(height: 25),
+
+                  ///---- Button Section ---- ///
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      /// cancel button ///
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.grey.shade700,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          "Cancel",
+                          style: myTextStyle18(
+                            context,
+                            fontColor: Colors.black54,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      /// user add button
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            APIs.addChatUser(email).then((success) {
+                              if (!success) {
+                                Dialogs.myShowSnackBar(
+                                  context,
+                                  "User does not exist",
+                                  Colors.red.shade100,
+                                  Colors.black87,
+                                );
+                              } else {
+                                Navigator.pop(context);
+                              }
+                            });
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary.withAlpha(120),
+                          foregroundColor: Colors.white,
+                          side: BorderSide(width: 1, color: AppColors.primary),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          "Add User",
+                          style: myTextStyle18(
+                            context,
+                            fontColor: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
     );
   }

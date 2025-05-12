@@ -22,7 +22,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  /// store all messages
+  /// ---- store all messages  --- ///
   List<MessageModel> _list = [];
   final _textController = TextEditingController();
   File? imageFile;
@@ -82,7 +82,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final mqData = MediaQuery.of(context);
+    /// final mqData = MediaQuery.of(context);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -91,6 +91,7 @@ class _ChatScreenState extends State<ChatScreen> {
           flexibleSpace: _buildAppBar(),
           automaticallyImplyLeading: false,
         ),
+        backgroundColor: Colors.white,
 
         /// ---- body ---- ///
         body: SafeArea(
@@ -185,84 +186,95 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         );
       },
-      child: StreamBuilder(
-        stream: APIs.getUserInfo(widget.user),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return LinearProgressIndicator();
-          }
-          final data = snapshot.data?.docs ?? [];
-          final list =
-              data.map((e) => ChatUserModel.fromJson(e.data())).toList();
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 31),
-              Row(
-                children: [
-                  /// --- back button --- ///
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(Icons.arrow_back_rounded),
-                  ),
-
-                  /// --- user image --- ////
-                  SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: ClipOval(
-                      child: CachedNetworkImage(
-                        imageUrl:
-                            list.isNotEmpty
-                                ? list[0].imageUrl ?? ''
-                                : widget.user.imageUrl ?? '',
-                        fit: BoxFit.cover,
-                        placeholder:
-                            (context, url) => const CircularProgressIndicator(),
-                        errorWidget:
-                            (context, url, error) => const Icon(Icons.person),
-                      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.secondary.withAlpha(100),
+              AppColors.secondary.withAlpha(100),
+            ],
+          ),
+        ),
+        child: StreamBuilder(
+          stream: APIs.getUserInfo(widget.user),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return LinearProgressIndicator();
+            }
+            final data = snapshot.data?.docs ?? [];
+            final list =
+                data.map((e) => ChatUserModel.fromJson(e.data())).toList();
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 31),
+                Row(
+                  children: [
+                    /// --- back button --- ///
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: Icon(Icons.arrow_back_rounded),
                     ),
-                  ),
-                  SizedBox(width: 11),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// --- user name --- ///
-                      Text(
-                        list.isNotEmpty
-                            ? list[0].name ?? 'Unknown'
-                            : widget.user.name ?? 'Unknown',
-                        style: myTextStyle18(
-                          context,
-                          fontColor: Colors.black87,
+
+                    /// --- user image --- ////
+                    SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl:
+                              list.isNotEmpty
+                                  ? list[0].imageUrl ?? ''
+                                  : widget.user.imageUrl ?? '',
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (context, url) =>
+                                  const CircularProgressIndicator(),
+                          errorWidget:
+                              (context, url, error) => const Icon(Icons.person),
                         ),
                       ),
+                    ),
+                    SizedBox(width: 11),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        /// --- user name --- ///
+                        Text(
+                          list.isNotEmpty
+                              ? list[0].name ?? 'Unknown'
+                              : widget.user.name ?? 'Unknown',
+                          style: myTextStyle18(
+                            context,
+                            fontColor: Colors.black87,
+                          ),
+                        ),
 
-                      /// --- last active --- ///
-                      Text(
-                        list.isNotEmpty
-                            ? list[0].isOnline
-                                ? 'Online'
-                                : MyDateUtil.getLastActiveTime(
-                                  context: context,
-                                  lastActive: list[0].lastActive.toString(),
-                                )
-                            : MyDateUtil.getLastActiveTime(
-                              context: context,
-                              lastActive: list[0].lastActive.toString(),
-                            ),
-                        style: myTextStyle12(context, fontColor: Colors.green),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
+                        /// --- last active --- ///
+                        Text(
+                          list.isNotEmpty
+                              ? list[0].isOnline
+                                  ? 'Online'
+                                  : MyDateUtil.getLastActiveTime(
+                                    context: context,
+                                    lastActive: list[0].lastActive.toString(),
+                                  )
+                              : MyDateUtil.getLastActiveTime(
+                                context: context,
+                                lastActive: list[0].lastActive.toString(),
+                              ),
+                          style: myTextStyle12(context, fontColor: Colors.blue),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

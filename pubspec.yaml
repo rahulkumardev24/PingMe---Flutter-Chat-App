@@ -48,10 +48,6 @@ dependencies:
   # gallery_saver_updated: ^3.0.0
   gallery_saver_plus: ^3.2.1
 
-#  dio: ^5.4.0
-#  gallery_saver: ^2.3.2
-#  path_provider: ^2.1.2
-#  permission_handler: ^11.3.1
 
 
 
