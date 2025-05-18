@@ -2,6 +2,32 @@
 
 Ping Me is a modern, real-time chat application built with Flutter and Firebase. It allows users to send text messages, images, and emojis in real-time. The app features user authentication, online/offline status, and a clean, intuitive UI.
 
+## 📷 Poster 
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/1.png" />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/2.png" />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/3.png" />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/4.png" />
+
+## UI
+<div>
+   <img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250512_191953.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250512_192011.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250512_230100.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250512_233905.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250513_011454.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250513_012623.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250513_012632.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250513_023454.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250513_023534.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250513_025122.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250513_031931.png" height = 500 />
+<img src = "https://github.com/rahulkumardev24/PingMe---Flutter-Chat-App/blob/main/Screenshot_20250513_031952.png" height = 500 />
+
+
+</div>
+
+
+
 ## ✨ Features
 
 - 🔐 **Google Sign-In** - Secure authentication using Google Sign-In
